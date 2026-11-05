@@ -53,6 +53,8 @@ type WsSink = SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, tungsteni
 enum Sink {
     TcpStream(TcpStreamSink),
     Ws(WsSink),
+    // ITLDesk: conexão TCP criptografada após a troca de chaves (itldesk_kx)
+    Secure(TcpStreamSink, hbb_common::tcp::Encrypt),
 }
 type Sender = mpsc::UnboundedSender<Data>;
 type Receiver = mpsc::UnboundedReceiver<Data>;
@@ -953,6 +955,9 @@ impl RendezvousServer {
                     Sink::Ws(ws) => {
                         allow_err!(ws.send(tungstenite::Message::Binary(bytes)).await);
                     }
+                    Sink::Secure(s, enc) => {
+                        allow_err!(s.send(Bytes::from(enc.enc(&bytes))).await);
+                    }
                 }
             }
         }
@@ -1312,9 +1317,48 @@ impl RendezvousServer {
         } else {
             let (a, mut b) = Framed::new(stream, BytesCodec::new()).split();
             sink = Some(Sink::TcpStream(a));
-            while let Ok(Some(Ok(bytes))) = timeout(30_000, b.next()).await {
-                if !self.handle_tcp(&bytes, &mut sink, addr, key, ws).await {
-                    break;
+            // ITLDesk: cliente calado está esperando a troca de chaves (itldesk_kx)
+            let mut first = None;
+            let mut dec: Option<hbb_common::tcp::Encrypt> = None;
+            match timeout(crate::itldesk_kx::OFFER_AFTER_MS, b.next()).await {
+                Ok(Some(Ok(bytes))) => first = Some(bytes),
+                Ok(_) => {}
+                Err(_) => match (self.inner.sk.as_ref().and_then(crate::itldesk_kx::offer), sink.take()) {
+                    (Some((offer, our_sk)), Some(Sink::TcpStream(mut s))) => {
+                        let sent = s.send(offer).await.is_ok();
+                        sink = Some(Sink::TcpStream(s));
+                        if sent {
+                            if let Ok(Some(Ok(bytes))) = timeout(30_000, b.next()).await {
+                                match crate::itldesk_kx::accept(&bytes, &our_sk) {
+                                    Some(k) => {
+                                        dec = Some(hbb_common::tcp::Encrypt::new(k.clone()));
+                                        if let Some(Sink::TcpStream(s)) = sink.take() {
+                                            sink = Some(Sink::Secure(s, hbb_common::tcp::Encrypt::new(k)));
+                                        }
+                                    }
+                                    None => first = Some(bytes),
+                                }
+                            }
+                        }
+                    }
+                    (_, s) => sink = s,
+                },
+            }
+            let mut go = match first {
+                Some(bytes) => self.handle_tcp(&bytes, &mut sink, addr, key, ws).await,
+                None => true,
+            };
+            while go {
+                match timeout(30_000, b.next()).await {
+                    Ok(Some(Ok(mut bytes))) => {
+                        if let Some(d) = dec.as_mut() {
+                            if d.dec(&mut bytes).is_err() {
+                                break;
+                            }
+                        }
+                        go = self.handle_tcp(&bytes, &mut sink, addr, key, ws).await;
+                    }
+                    _ => break,
                 }
             }
         }
