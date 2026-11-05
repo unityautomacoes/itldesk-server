@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Fatura #{{ inv.id }}{% endblock %}
+{% block body %}
+<div class="center-page"><div class="card" style="max-width:480px">
+  <div class="logo-head"><img src="{{ B }}/static/logo.png" alt=""><h1 style="margin:8px 0 0">Fatura ITLDesk</h1></div>
+  <div class="kv" style="margin-bottom:16px">
+    <div>Cliente</div><div><b>{{ inv.customer }}</b></div>
+    <div>Referente a</div><div>{{ inv.description }}</div>
+    <div>Vencimento</div><div>{{ inv.due_date|brdate }}</div>
+    <div>Valor</div><div style="font-size:20px;font-weight:700">{{ inv.amount|money }}</div>
+    <div>Situação</div><div><span class="badge b-{{ inv.status }}">{{ {'pending':'Em aberto','paid':'Paga','canceled':'Cancelada'}[inv.status] }}</span></div>
+  </div>
+  {% if inv.status == 'paid' %}
+    <div class="flash ok">Pagamento confirmado ({{ inv.paid_method }}) em {{ inv.paid_at|brdate }}. Obrigado! O acesso já está liberado.</div>
+  {% elif inv.status == 'canceled' %}
+    <p class="muted">Esta fatura foi cancelada ou substituída. Fale com o suporte para receber o link atualizado.</p>
+  {% elif pay_url %}
+    <a class="btn big" style="width:100%;text-align:center" href="{{ pay_url }}">Pagar com Pix, boleto ou cartão</a>
+    <p class="muted" style="text-align:center;margin-top:10px">Pagamento processado pelo Mercado Pago. Pix e cartão liberam o acesso em minutos; boleto, em até 3 dias úteis.</p>
+  {% else %}
+    <p class="muted">O pagamento online está indisponível no momento. Fale com o suporte para pagar esta fatura.</p>
+  {% endif %}
+</div></div>
+{% endblock %}

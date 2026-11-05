@@ -1,0 +1,42 @@
+{% extends "site/base.html" %}
+{% block title %}Conta criada - ITLDesk{% endblock %}
+{% block content %}
+<div class="form-page"><div class="wrap" style="max-width:820px">
+  <div class="card">
+    <div class="success-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <h1>Conta criada, {{ inv.customer }}!</h1>
+    {% if inv.sub_status == 'trial' %}
+      <p style="color:var(--ink-2)">Seu teste grátis do plano <b>{{ inv.plan_name }}</b> vai até <b>{{ inv.period_end|brdate }}</b>. Para continuar depois disso, pague a fatura abaixo quando quiser.</p>
+    {% elif inv.status == 'paid' or inv.sub_status == 'active' %}
+      <p style="color:var(--ink-2)">Pagamento confirmado. Seu plano <b>{{ inv.plan_name }}</b> está ativo até <b>{{ inv.period_end|brdate }}</b>.</p>
+    {% else %}
+      <p style="color:var(--ink-2)">Falta só o pagamento: o acesso é liberado automaticamente assim que ele for confirmado.</p>
+    {% endif %}
+
+    <h2>Seu acesso</h2>
+    <div class="kv">
+      <div>Usuário do técnico</div><div><span class="code">{{ username }}</span></div>
+      <div>Senha</div><div>a que você definiu no cadastro</div>
+    </div>
+
+    <h2>Como começar</h2>
+    <ol class="how">
+      <li>Baixe e instale o ITLDesk no seu computador{% if downloads %}:{% endif %}
+        {% if downloads %}<div class="dl" style="margin:10px 0 4px">{% for f in downloads %}<a href="/download/{{ f.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span><b>{{ f.kind }}</b><small>{{ f.name }} · {{ f.size_mb }} MB</small></span></a>{% endfor %}</div>{% endif %}
+      </li>
+      <li>Abra o ITLDesk, clique no ícone de <b>conta</b> (canto superior) e entre com o usuário <span class="code">{{ username }}</span> e sua senha.</li>
+      <li>No computador do cliente, instale o mesmo programa. Peça o <b>ID</b> e a <b>senha</b> que aparecem na tela dele e conecte-se.</li>
+    </ol>
+
+    <h2>Fatura</h2>
+    <div class="kv" style="margin-bottom:18px">
+      <div>Valor</div><div><b>{{ inv.amount|money }}</b></div>
+      <div>Vencimento</div><div>{{ inv.due_date|brdate }}</div>
+      <div>Situação</div><div>{{ {'pending':'Em aberto','paid':'Paga','canceled':'Cancelada'}[inv.status] }}</div>
+    </div>
+    {% if inv.status == 'pending' %}<a class="btn {{ 'btn-ghost' if inv.sub_status == 'trial' else 'btn-primary' }} btn-lg" href="{{ invoice_url }}">{{ 'Pagar agora (opcional)' if inv.sub_status == 'trial' else 'Pagar com Pix, boleto ou cartão' }}</a>{% endif %}
+    <p style="color:var(--muted);font-size:14px;margin-top:18px">Guarde este endereço: é por ele que você acessa a fatura. Dúvidas?
+      {% if SITE.SUPPORT_WHATSAPP %}<a href="https://wa.me/{{ SITE.SUPPORT_WHATSAPP }}" target="_blank" rel="noopener">Fale no WhatsApp</a>{% elif SITE.SUPPORT_EMAIL %}<a href="mailto:{{ SITE.SUPPORT_EMAIL }}">{{ SITE.SUPPORT_EMAIL }}</a>{% else %}Fale com o suporte.{% endif %}</p>
+  </div>
+</div></div>
+{% endblock %}

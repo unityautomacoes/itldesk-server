@@ -1,0 +1,76 @@
+{% extends "site/base.html" %}
+{% block title %}{{ 'Teste grátis' if signup_mode == 'trial' else 'Assinar' }} - ITLDesk{% endblock %}
+{% block content %}
+<div class="form-page"><div class="wrap">
+  <form method="post" action="/assinar" class="form-grid" autocomplete="on" novalidate id="signup">
+    <div class="card">
+      <h1>{{ 'Crie sua conta e teste por %d dias'|format(TRIAL_DAYS) if signup_mode == 'trial' else 'Crie sua conta ITLDesk' }}</h1>
+      <p style="color:var(--muted);margin:0 0 18px">{{ 'Sem cartão. Você só paga se quiser continuar.' if signup_mode == 'trial' else 'O acesso é liberado assim que o pagamento for confirmado.' }}</p>
+      {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+
+      <h2>Plano</h2>
+      <div class="row">
+        <div class="f"><label for="plan_id">Plano</label>
+          <select id="plan_id" name="plan_id" required>
+            {% for p in plans %}<option value="{{ p.id }}" data-name="{{ p.name }}" data-m="{{ p.price_monthly }}" data-y="{{ p.price_yearly }}" data-tech="{{ p.max_technicians }}" data-dev="{{ p.max_devices or '' }}" {{ 'selected' if v.plan_id == p.id|string }}>{{ p.name }} - {{ p.max_technicians }} técnico{{ 's' if p.max_technicians > 1 }}</option>{% endfor %}
+          </select></div>
+        <div class="f"><label for="cycle">Cobrança</label>
+          <select id="cycle" name="cycle">
+            <option value="monthly" {{ 'selected' if v.cycle != 'yearly' }}>Mensal</option>
+            <option value="yearly" {{ 'selected' if v.cycle == 'yearly' }}>Anual (2 meses grátis)</option>
+          </select></div>
+      </div>
+
+      <h2>Seus dados</h2>
+      <div class="f"><label for="name">Nome completo ou razão social</label><input id="name" name="name" value="{{ v.name or '' }}" required autocomplete="organization"></div>
+      <div class="row">
+        <div class="f"><label for="document">CPF ou CNPJ</label><input id="document" name="document" value="{{ v.document or '' }}" required inputmode="numeric"></div>
+        <div class="f"><label for="phone">Telefone / WhatsApp</label><input id="phone" name="phone" value="{{ v.phone or '' }}" required inputmode="tel" autocomplete="tel" placeholder="(11) 91234-5678"></div>
+      </div>
+      <div class="f"><label for="email">E-mail</label><input id="email" name="email" type="email" value="{{ v.email or '' }}" required autocomplete="email"><div class="hint">Usado para faturas e recibos.</div></div>
+
+      <h2>Acesso do técnico</h2>
+      <div class="f"><label for="username">Usuário para entrar no app ITLDesk</label><input id="username" name="username" value="{{ v.username or '' }}" required autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: joao.suporte"><div class="hint">Letras, números, ponto ou hífen. Você poderá pedir mais técnicos conforme o plano.</div></div>
+      <div class="row">
+        <div class="f"><label for="password">Senha</label><input id="password" name="password" type="password" required minlength="8" autocomplete="new-password"></div>
+        <div class="f"><label for="password2">Repita a senha</label><input id="password2" name="password2" type="password" required minlength="8" autocomplete="new-password"></div>
+      </div>
+      <div class="hp" aria-hidden="true"><label>Site <input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="check"><input type="checkbox" name="terms" value="1" required> <span>Li e aceito os <a href="/termos" target="_blank">termos de uso</a>.</span></label>
+      <button class="btn btn-primary btn-lg btn-block">{{ 'Criar conta e começar o teste' if signup_mode == 'trial' else 'Criar conta e ir para o pagamento' }}</button>
+    </div>
+
+    <aside class="card summary">
+      <h2 style="margin-top:0">Resumo</h2>
+      <div class="plan-pick">
+        <div style="font-weight:800;font-size:18px" id="s-name"></div>
+        <div class="big" id="s-price"></div>
+        <div style="color:var(--muted);font-size:14px" id="s-sub"></div>
+      </div>
+      <ul>
+        <li id="s-tech"></li>
+        <li id="s-dev"></li>
+        {% if signup_mode == 'trial' %}<li>{{ TRIAL_DAYS }} dias grátis; a 1ª cobrança vence no fim do teste</li>{% endif %}
+        <li>Pix, boleto ou cartão (Mercado Pago)</li>
+        <li>{{ GRACE_DAYS }} dias de carência se atrasar</li>
+      </ul>
+    </aside>
+  </form>
+</div></div>
+<script>
+(function () {
+  var plan = document.getElementById('plan_id'), cycle = document.getElementById('cycle');
+  function brl(c) { return 'R$ ' + (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function update() {
+    var o = plan.options[plan.selectedIndex]; if (!o) return;
+    var yearly = cycle.value === 'yearly', m = +o.dataset.m, y = +o.dataset.y, t = +o.dataset.tech;
+    document.getElementById('s-name').textContent = 'ITLDesk ' + o.dataset.name;
+    document.getElementById('s-price').textContent = yearly ? brl(y) + '/ano' : brl(m) + '/mês';
+    document.getElementById('s-sub').textContent = yearly ? 'equivale a ' + brl(Math.round(y / 12)) + '/mês' : 'cobrança mensal';
+    document.getElementById('s-tech').textContent = t + (t > 1 ? ' técnicos' : ' técnico') + ' com login próprio';
+    document.getElementById('s-dev').textContent = o.dataset.dev ? 'Até ' + o.dataset.dev + ' dispositivos gerenciados' : 'Dispositivos ilimitados';
+  }
+  plan.addEventListener('change', update); cycle.addEventListener('change', update); update();
+})();
+</script>
+{% endblock %}

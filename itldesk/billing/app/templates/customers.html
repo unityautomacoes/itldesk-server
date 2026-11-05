@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block content %}
+<h1>Clientes</h1>
+<div class="card">
+  <details {{ 'open' if not customers }}>
+    <summary>+ Novo cliente</summary>
+    <form method="post" action="{{ B }}/clientes">
+      <div class="fields">
+        <div><label>Nome / Razão social</label><input name="name" required></div>
+        <div><label>CPF / CNPJ</label><input name="document"></div>
+        <div><label>E-mail (para o Mercado Pago)</label><input name="email" type="email"></div>
+        <div><label>Telefone / WhatsApp</label><input name="phone"></div>
+      </div>
+      <div class="fields">
+        <div><label>Plano</label><select name="plan_id">{% for p in plans %}<option value="{{ p.id }}">{{ p.name }} - {{ p.price_monthly|money }}/mês</option>{% endfor %}</select></div>
+        <div><label>Ciclo</label><select name="cycle"><option value="monthly">Mensal</option><option value="yearly">Anual</option></select></div>
+        <div><label>Início</label><select name="start_mode">
+          <option value="trial">Teste grátis de {{ trial_days }} dias</option>
+          <option value="pending">Liberar só após o 1º pagamento</option>
+          <option value="paid">Já pago (liberar agora)</option>
+        </select></div>
+      </div>
+      <div style="margin-bottom:12px"><label>Observações</label><textarea name="notes"></textarea></div>
+      <button class="btn">Cadastrar cliente</button>
+    </form>
+  </details>
+</div>
+<div class="card">
+  <form method="get" class="actions" style="margin-bottom:12px">
+    <input name="q" value="{{ q }}" placeholder="Buscar por nome, documento ou e-mail" style="max-width:360px">
+    <button class="btn light small">Buscar</button>
+  </form>
+  <div class="table-wrap"><table>
+    <tr><th>Cliente</th><th>Plano</th><th>Situação</th><th>Pago até</th></tr>
+    {% for c in customers %}
+    <tr>
+      <td><a href="{{ B }}/clientes/{{ c.id }}"><b>{{ c.name }}</b></a><div class="muted">{{ c.document }} {{ c.email }}</div></td>
+      <td>{{ c.plan_name }} · {{ CYCLES[c.cycle] }}</td>
+      <td><span class="badge b-{{ c.status }}">{{ STATUS[c.status] }}</span></td>
+      <td>{{ c.period_end|brdate if c.status != 'pending' else '-' }}</td>
+    </tr>
+    {% else %}<tr><td colspan="4" class="muted">Nenhum cliente encontrado.</td></tr>{% endfor %}
+  </table></div>
+</div>
+{% endblock %}

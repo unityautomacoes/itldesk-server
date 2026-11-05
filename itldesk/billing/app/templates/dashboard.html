@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Painel{% endblock %}
+{% block content %}
+<div class="actions" style="justify-content:space-between;margin-bottom:12px">
+  <h1 style="margin:0">Painel de cobrança</h1>
+  <form method="post" action="{{ B }}/rotina"><button class="btn light small">Atualizar agora</button></form>
+</div>
+<div class="grid g4" style="margin-bottom:16px">
+  <div class="card stat"><div class="label">Receita mensal recorrente</div><div class="value">{{ mrr|money }}</div></div>
+  <div class="card stat"><div class="label">Recebido neste mês</div><div class="value">{{ received|money }}</div></div>
+  <div class="card stat"><div class="label">Em aberto</div><div class="value">{{ open_total|money }}</div></div>
+  <div class="card stat"><div class="label">Assinaturas ativas</div><div class="value">{{ counts.get('active', 0) }}</div>
+    <div class="muted">{{ counts.get('trial', 0) }} em teste · {{ counts.get('past_due', 0) }} em carência · {{ counts.get('blocked', 0) }} bloqueadas</div></div>
+</div>
+<div class="grid g2">
+  <div class="card">
+    <h2>Precisam de atenção</h2>
+    {% if attention %}
+    <table><tr><th>Cliente</th><th>Situação</th><th>Venceu em</th></tr>
+    {% for a in attention %}
+      <tr><td><a href="{{ B }}/clientes/{{ a.id }}">{{ a.name }}</a></td>
+      <td><span class="badge b-{{ a.status }}">{{ STATUS[a.status] }}</span></td>
+      <td>{{ a.period_end|brdate if a.status != 'pending' else '-' }}</td></tr>
+    {% endfor %}</table>
+    {% else %}<p class="muted">Nenhum cliente vencido ou bloqueado.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Últimos eventos</h2>
+    {% if events %}
+    <table>{% for e in events %}
+      <tr><td class="muted" style="white-space:nowrap">{{ e.at[8:10] }}/{{ e.at[5:7] }} {{ e.at[11:16] }}</td>
+      <td>{% if e.name %}<a href="{{ B }}/clientes/{{ e.customer_id }}">{{ e.name }}</a>: {% endif %}{{ e.message }}</td></tr>
+    {% endfor %}</table>
+    {% else %}<p class="muted">Nada ainda. Comece cadastrando um <a href="{{ B }}/clientes">cliente</a>.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

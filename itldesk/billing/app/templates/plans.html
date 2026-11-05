@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Planos{% endblock %}
+{% macro plan_form(p=None) %}
+<form method="post" action="{{ B }}/planos">
+  <input type="hidden" name="plan_id" value="{{ p.id if p else '' }}">
+  <div class="fields">
+    <div><label>Nome</label><input name="name" value="{{ p.name if p else '' }}" required></div>
+    <div><label>Descrição</label><input name="description" value="{{ p.description if p else '' }}"></div>
+    <div><label>Técnicos</label><input name="max_technicians" type="number" min="1" value="{{ p.max_technicians if p else 1 }}" required></div>
+    <div><label>Dispositivos (vazio = ilimitado)</label><input name="max_devices" type="number" min="1" value="{{ p.max_devices if p and p.max_devices else '' }}"></div>
+    <div><label>Preço mensal (R$)</label><input name="price_monthly" value="{{ '%.2f'|format(p.price_monthly/100) if p else '' }}" placeholder="49,90" required></div>
+    <div><label>Preço anual (R$)</label><input name="price_yearly" value="{{ '%.2f'|format(p.price_yearly/100) if p else '' }}" placeholder="499,00" required></div>
+    <div><label>Ordem</label><input name="sort" type="number" value="{{ p.sort if p else 0 }}"></div>
+    <div><label>Situação</label><select name="active"><option value="1" {{ 'selected' if not p or p.active }}>Disponível</option><option value="" {{ 'selected' if p and not p.active }}>Oculto (não vende mais)</option></select></div>
+  </div>
+  <button class="btn small">{{ 'Salvar' if p else 'Criar plano' }}</button>
+</form>
+{% endmacro %}
+{% block content %}
+<h1>Planos</h1>
+<div class="card table-wrap">
+  <table>
+    <tr><th>Plano</th><th class="num">Técnicos</th><th class="num">Dispositivos</th><th class="num">Mensal</th><th class="num">Anual</th><th class="num">Assinantes</th><th></th></tr>
+    {% for p in plans %}
+    <tr>
+      <td><b>{{ p.name }}</b>{% if not p.active %} <span class="badge b-canceled">oculto</span>{% endif %}<div class="muted">{{ p.description }}</div></td>
+      <td class="num">{{ p.max_technicians }}</td>
+      <td class="num">{{ p.max_devices or 'Ilimitado' }}</td>
+      <td class="num">{{ p.price_monthly|money }}</td>
+      <td class="num">{{ p.price_yearly|money }}</td>
+      <td class="num">{{ p.subs }}</td>
+      <td><details><summary>Editar</summary>{{ plan_form(p) }}</details></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card"><details><summary>+ Novo plano</summary>{{ plan_form() }}</details></div>
+<p class="muted">Alterar o preço não muda faturas já geradas; o novo valor entra nas próximas. Para tirar um plano de venda sem afetar quem já assina, deixe-o como "Oculto".</p>
+{% endblock %}

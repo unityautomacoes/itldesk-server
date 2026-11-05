@@ -568,6 +568,10 @@ impl RendezvousServer {
                         );
                         return false;
                     }
+                    if let Err(reason) = crate::itldesk_auth::check_controller(&rf.token) {
+                        log::info!("ITLDesk: relay de {} para {} recusado: {}", addr, rf.id, reason);
+                        return false;
+                    }
                     // there maybe several attempt, so sink can be none
                     if let Some(sink) = sink.take() {
                         self.tcp_punch.lock().await.insert(try_into_v4(addr), sink);
@@ -768,6 +772,15 @@ impl RendezvousServer {
             let mut msg_out = RendezvousMessage::new();
             msg_out.set_punch_hole_response(PunchHoleResponse {
                 failure: punch_hole_response::Failure::LICENSE_MISMATCH.into(),
+                ..Default::default()
+            });
+            return Ok((msg_out, None));
+        }
+        if let Err(reason) = crate::itldesk_auth::check_controller(&ph.token) {
+            log::info!("ITLDesk: conexão de {} para {} recusada: {}", addr, ph.id, reason);
+            let mut msg_out = RendezvousMessage::new();
+            msg_out.set_punch_hole_response(PunchHoleResponse {
+                other_failure: reason.to_owned(),
                 ..Default::default()
             });
             return Ok((msg_out, None));

@@ -1,0 +1,111 @@
+# ITLDesk Server - stack completa (ID/Rendezvous + Relay)
+# Uso: copie .env.example para .env, ajuste ITLDESK_HOST e rode:
+#   docker compose up -d --build
+
+name: itldesk
+
+services:
+  hbbs:
+    container_name: itldesk-hbbs
+    build:
+      context: ..
+      dockerfile: itldesk/Dockerfile
+    image: itldesk-server:latest
+    # -k _  => aceita somente clientes que usam a chave pública deste servidor
+    command: hbbs -r ${ITLDESK_HOST}:21117 -k _
+    environment:
+      # só técnicos logados e com assinatura ativa iniciam acessos
+      - ITLDESK_MUST_LOGIN=${ITLDESK_MUST_LOGIN:-Y}
+      - RUSTDESK_API_JWT_KEY=${ITLDESK_JWT_KEY}
+      - ITLDESK_ALLOWED_USERS_FILE=/data/itldesk_allowed_users.json
+    ports:
+      - "21115:21115"       # TCP - teste de tipo de NAT
+      - "21116:21116"       # TCP - registro de ID / hole punching
+      - "21116:21116/udp"   # UDP - registro de ID / heartbeat
+      - "21118:21118"       # TCP - web client (opcional)
+    volumes:
+      - ./data:/data
+    depends_on:
+      - hbbr
+    restart: unless-stopped
+
+  hbbr:
+    container_name: itldesk-hbbr
+    build:
+      context: ..
+      dockerfile: itldesk/Dockerfile
+    image: itldesk-server:latest
+    command: hbbr -k _
+    ports:
+      - "21117:21117"       # TCP - relay
+      - "21119:21119"       # TCP - relay web client (opcional)
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+
+  # Painel admin + API (login, dispositivos, catálogo de endereços, auditoria)
+  # https://github.com/lejianwen/rustdesk-api (MIT)
+  api:
+    container_name: itldesk-api
+    image: lejianwen/rustdesk-api:v2.7
+    environment:
+      - TZ=America/Sao_Paulo
+      - RUSTDESK_API_LANG=en
+      - RUSTDESK_API_RUSTDESK_ID_SERVER=${ITLDESK_HOST}:21116
+      - RUSTDESK_API_RUSTDESK_RELAY_SERVER=${ITLDESK_HOST}:21117
+      - RUSTDESK_API_RUSTDESK_API_SERVER=https://${ITLDESK_HOST}
+      - RUSTDESK_API_KEY_FILE=/data/id_ed25519.pub
+      - RUSTDESK_API_JWT_KEY=${ITLDESK_JWT_KEY}
+      - RUSTDESK_API_ADMIN_TITLE=ITLDesk Admin
+    ports:
+      - "21114:21114"       # TCP - API (clientes atuais usam http://host:21114)
+    volumes:
+      - ./data:/data:ro           # lê a chave pública do hbbs
+      - ./api-data:/app/data      # banco de dados do painel
+      - ./admin-ui:/app/resources/admin:ro   # painel com logo/título ITLDesk (gerado de lejianwen/rustdesk-api:v2.7)
+    depends_on:
+      - hbbs
+    restart: unless-stopped
+
+  # Cobrança: planos, clientes, técnicos, faturas e Mercado Pago (https://host/cobranca/)
+  billing:
+    container_name: itldesk-billing
+    build: ./billing
+    image: itldesk-billing:latest
+    environment:
+      - TZ=America/Sao_Paulo
+      - ITLDESK_HOST=${ITLDESK_HOST}
+      - ITLDESK_JWT_KEY=${ITLDESK_JWT_KEY}
+      - MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN:-}
+      - MP_WEBHOOK_SECRET=${MP_WEBHOOK_SECRET:-}
+      - BILLING_GRACE_DAYS=${BILLING_GRACE_DAYS:-5}
+      - BILLING_TRIAL_DAYS=${BILLING_TRIAL_DAYS:-7}
+      - BILLING_SIGNUP_MODE=${BILLING_SIGNUP_MODE:-trial}
+      - SUPPORT_WHATSAPP=${SUPPORT_WHATSAPP:-}
+      - SUPPORT_EMAIL=${SUPPORT_EMAIL:-}
+    volumes:
+      - ./downloads:/downloads:ro      # instaladores oferecidos no site (/download/...)
+      - ./billing-data:/billing        # banco da cobrança
+      - ./api-data:/rdapi              # cria técnicos no banco do painel
+      - ./data:/data                   # grava a lista de técnicos liberados lida pelo hbbs
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # HTTPS automático (Let's Encrypt): /cobranca -> billing, resto -> api
+  caddy:
+    container_name: itldesk-caddy
+    image: caddy:2.10.2-alpine
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    environment:
+      - ITLDESK_HOST=${ITLDESK_HOST}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy-data:/data
+    depends_on:
+      - api
+      - billing
+    restart: unless-stopped

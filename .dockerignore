@@ -1,0 +1,7 @@
+# Contexto do build do servidor (itldesk/Dockerfile): só o código Rust
+target
+client
+instaladores
+itldesk
+!itldesk/Dockerfile
+.git

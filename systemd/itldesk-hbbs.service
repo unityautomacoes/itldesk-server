@@ -1,0 +1,20 @@
+
+[Unit]
+Description=ITLDesk Signal Server
+
+[Service]
+Type=simple
+LimitNOFILE=1000000
+ExecStart=/usr/bin/hbbs
+WorkingDirectory=/var/lib/itldesk-server/
+User=
+Group=
+Restart=always
+StandardOutput=append:/var/log/itldesk-server/hbbs.log
+StandardError=append:/var/log/itldesk-server/hbbs.error
+# Restart service after 10 seconds if node service crashes
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

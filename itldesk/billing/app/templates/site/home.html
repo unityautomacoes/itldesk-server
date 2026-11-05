@@ -1,0 +1,133 @@
+{% extends "site/base.html" %}
+{% macro reais(cents) %}{{ (cents|money)[3:] }}{% endmacro %}
+{% block content %}
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="pill">Servidor próprio no Brasil</span>
+    <h1>Acesso remoto <em>rápido e seguro</em> para quem dá suporte</h1>
+    <p class="lead">Conecte-se aos computadores dos seus clientes em segundos, com criptografia de ponta a ponta e servidor no Brasil. Sem limite de sessões e sem cobrança por máquina atendida.</p>
+    <div class="cta">
+      <a class="btn btn-primary btn-lg" href="/assinar">{{ 'Testar grátis por %d dias'|format(TRIAL_DAYS) if SITE.SIGNUP_MODE == 'trial' else 'Assinar agora' }}</a>
+      <a class="btn btn-ghost btn-lg" href="#planos">Ver planos</a>
+    </div>
+    <div class="fine">{% if SITE.SIGNUP_MODE == 'trial' %}Sem cartão para testar. {% endif %}Pague com Pix, boleto ou cartão.</div>
+  </div>
+  <div class="mock" aria-hidden="true">
+    <div class="bar"><i></i><i></i><i></i><span>ITLDesk</span></div>
+    <div class="body">
+      <div class="side">
+        <small>Seu ID</small>
+        <div class="id">482 913 057</div>
+        <small>Senha</small>
+        <div class="pw">7k2m9q</div>
+      </div>
+      <div class="main">
+        <small style="color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.05em">CONTROLAR OUTRO COMPUTADOR</small>
+        <div class="field">Digite o ID do cliente</div>
+        <div class="peer"><span class="pc"></span><div><b>Financeiro - Loja Centro</b><span style="color:var(--muted);font-size:13px">Windows · online</span></div><span class="dot" style="margin-left:auto"></span></div>
+        <div class="peer"><span class="pc"></span><div><b>Servidor ERP</b><span style="color:var(--muted);font-size:13px">Windows · online</span></div><span class="dot" style="margin-left:auto"></span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section id="recursos"><div class="wrap">
+  <div class="sec-head"><span class="pill">Recursos</span><h2>Tudo o que sua equipe de suporte precisa</h2><p>Leve, rápido e com a sua marca de confiança: o ITLDesk roda em servidor dedicado no Brasil.</p></div>
+  <div class="features">
+    <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><h3>Baixa latência</h3><p>Servidor de conexão e relay no Brasil: imagem fluida mesmo em redes comuns.</p></div>
+    <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3>Criptografia de ponta a ponta</h3><p>As sessões são criptografadas entre os dois computadores. Só técnicos autorizados iniciam acessos.</p></div>
+    <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><h3>Acesso não supervisionado</h3><p>Defina uma senha permanente e acesse servidores e máquinas sem ninguém do outro lado.</p></div>
+    <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg></div><h3>Transferência de arquivos</h3><p>Envie e receba arquivos durante o atendimento, além de chat e área de transferência compartilhada.</p></div>
+    <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><h3>Equipe e catálogo de endereços</h3><p>Cada técnico tem seu login. Organize os computadores dos clientes no catálogo de endereços.</p></div>
+    <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div><h3>Instalação leve</h3><p>Instalador para Windows de cerca de 25 MB. O cliente atendido só precisa abrir o programa e informar o ID.</p></div>
+  </div>
+</div></section>
+
+<section id="como-funciona" class="alt"><div class="wrap">
+  <div class="sec-head"><span class="pill">Como funciona</span><h2>Comece a atender em 3 passos</h2></div>
+  <div class="steps">
+    <div class="step"><h3>Crie sua conta</h3><p>Escolha o plano e defina o usuário e a senha do técnico. {% if SITE.SIGNUP_MODE == 'trial' %}Você ganha {{ TRIAL_DAYS }} dias grátis.{% else %}O acesso é liberado assim que o pagamento é confirmado.{% endif %}</p></div>
+    <div class="step"><h3>Instale o ITLDesk</h3><p>Baixe o instalador no seu computador e no do cliente. No seu, entre com o usuário de técnico.</p></div>
+    <div class="step"><h3>Conecte-se</h3><p>Peça ao cliente o ID e a senha que aparecem na tela dele, ou use o acesso não supervisionado.</p></div>
+  </div>
+</div></section>
+
+<section id="planos"><div class="wrap">
+  <div class="sec-head">
+    <span class="pill">Planos</span><h2>Pague por técnico, não por máquina</h2>
+    <p>Quem recebe o atendimento não paga nada. Você escolhe quantos técnicos da sua equipe podem iniciar acessos.</p>
+    <div class="toggle" role="group" aria-label="Ciclo de cobrança">
+      <button type="button" class="on" data-cycle="monthly">Mensal</button>
+      <button type="button" data-cycle="yearly">Anual <span class="save">2 meses grátis</span></button>
+    </div>
+  </div>
+  <div class="plans" id="plan-list">
+    {% for p in plans %}
+    {% set featured = (plans|length >= 3 and loop.index == 2) or plans|length == 1 %}
+    <div class="plan {{ 'featured' if featured }}">
+      {% if featured %}<span class="tag">MAIS ESCOLHIDO</span>{% endif %}
+      <h3>{{ p.name }}</h3>
+      <div class="desc">{{ p.description }}</div>
+      <div class="price"><span class="monthly-only">R$ {{ reais(p.price_monthly) }}</span><span class="yearly-only">R$ {{ reais((p.price_yearly / 12)|round|int) }}</span> <small>/mês</small></div>
+      <div class="sub"><span class="monthly-only">cobrado mensalmente</span><span class="yearly-only">R$ {{ reais(p.price_yearly) }} cobrado por ano</span></div>
+      <ul>
+        <li><b>{{ p.max_technicians }} técnico{{ 's' if p.max_technicians > 1 }}</b> com login próprio</li>
+        <li>{% if p.max_devices %}Até <b>{{ p.max_devices }} dispositivos</b> gerenciados{% else %}<b>Dispositivos ilimitados</b>{% endif %}</li>
+        <li>Sessões ilimitadas</li>
+        <li>Acesso não supervisionado</li>
+        <li>Transferência de arquivos e chat</li>
+        <li>Servidor no Brasil</li>
+      </ul>
+      <a class="btn {{ 'btn-primary' if featured else 'btn-blue' }} btn-block plan-link" data-plan="{{ p.id }}" href="/assinar?plano={{ p.id }}&ciclo=monthly">{{ 'Testar grátis' if SITE.SIGNUP_MODE == 'trial' else 'Assinar' }}</a>
+    </div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<section id="duvidas" class="alt"><div class="wrap">
+  <div class="sec-head"><span class="pill">Dúvidas</span><h2>Perguntas frequentes</h2></div>
+  <div class="faq">
+    <details><summary>O que conta como técnico?</summary><p>Técnico é quem inicia os acessos remotos: cada um tem usuário e senha próprios no app ITLDesk. Os computadores atendidos não contam como técnico e não pagam nada.</p></details>
+    <details><summary>Quais formas de pagamento são aceitas?</summary><p>Pix, boleto e cartão de crédito, pelo Mercado Pago. Pix e cartão liberam o acesso em minutos; boleto, em até 3 dias úteis após o pagamento.</p></details>
+    {% if SITE.SIGNUP_MODE == 'trial' %}<details><summary>Preciso de cartão para testar?</summary><p>Não. O teste grátis dura {{ TRIAL_DAYS }} dias. A fatura do primeiro mês fica disponível desde o cadastro, e você paga só se quiser continuar.</p></details>{% endif %}
+    <details><summary>O que acontece se eu atrasar o pagamento?</summary><p>Você tem {{ GRACE_DAYS }} dias de carência após o vencimento, com acesso normal. Depois disso, os técnicos não conseguem iniciar novos acessos até a fatura ser paga, e tudo volta a funcionar automaticamente após o pagamento.</p></details>
+    <details><summary>Posso mudar de plano ou cancelar?</summary><p>Sim. Fale com o suporte para mudar o plano ou o ciclo. Não há fidelidade: se não renovar, a assinatura simplesmente não é renovada.</p></details>
+    <details><summary>Em quais sistemas o ITLDesk funciona?</summary><p>No momento, o aplicativo está disponível para Windows 10 e 11 (64 bits).</p></details>
+  </div>
+</div></section>
+
+{% if downloads %}
+<section id="download"><div class="wrap">
+  <div class="sec-head"><span class="pill">Download</span><h2>Baixe o ITLDesk</h2><p>O mesmo programa serve para quem acessa e para quem é atendido.</p></div>
+  <div class="dl" style="justify-content:center">
+    {% for f in downloads %}
+    <a href="/download/{{ f.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span><b>{{ f.kind }}</b><small>{{ f.name }} · {{ f.size_mb }} MB</small></span></a>
+    {% endfor %}
+  </div>
+</div></section>
+{% endif %}
+
+<section style="padding-top:20px"><div class="wrap">
+  <div class="band">
+    <div><h2>Pronto para atender mais rápido?</h2><p>{{ 'Crie sua conta e teste por %d dias, sem cartão.'|format(TRIAL_DAYS) if SITE.SIGNUP_MODE == 'trial' else 'Crie sua conta e comece hoje.' }}</p></div>
+    <a class="btn btn-primary btn-lg" href="/assinar">{{ 'Começar teste grátis' if SITE.SIGNUP_MODE == 'trial' else 'Assinar agora' }}</a>
+  </div>
+</div></section>
+
+<script>
+(function () {
+  var list = document.getElementById('plan-list');
+  var buttons = document.querySelectorAll('.toggle button');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var cycle = btn.getAttribute('data-cycle');
+      buttons.forEach(function (b) { b.classList.toggle('on', b === btn); });
+      list.classList.toggle('is-yearly', cycle === 'yearly');
+      document.querySelectorAll('.plan-link').forEach(function (a) {
+        a.href = '/assinar?plano=' + a.getAttribute('data-plan') + '&ciclo=' + cycle;
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

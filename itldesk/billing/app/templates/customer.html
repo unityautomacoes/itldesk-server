@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ c.name }}{% endblock %}
+{% block content %}
+{% set back = '/clientes/' ~ c.id %}
+{% set active_techs = techs|selectattr('status', 'equalto', 1)|list %}
+<div class="actions" style="margin-bottom:12px">
+  <h1 style="margin:0">{{ c.name }}</h1>
+  <span class="badge b-{{ c.status }}">{{ STATUS[c.status] }}</span>
+</div>
+{% if c.status == 'past_due' %}<div class="notice">Assinatura vencida em {{ c.period_end|brdate }}. Os técnicos continuam acessando durante a carência; depois disso, são bloqueados.</div>{% endif %}
+{% if c.status == 'blocked' %}<div class="flash err">Assinatura bloqueada: os técnicos deste cliente não conseguem iniciar acessos até o pagamento.</div>{% endif %}
+
+<div class="grid g2">
+  <div class="card">
+    <h2>Assinatura</h2>
+    <div class="kv" style="margin-bottom:14px">
+      <div>Plano</div><div><b>{{ c.plan_name }}</b> · {{ CYCLES[c.cycle] }}</div>
+      <div>Pago até</div><div>{{ c.period_end|brdate if c.status != 'pending' else 'Aguardando 1º pagamento' }}</div>
+      <div>Técnicos</div><div>{{ active_techs|length }} de {{ c.max_technicians }}
+        <div class="bar"><span class="{{ 'full' if active_techs|length >= c.max_technicians }}" style="width:{{ [100, (active_techs|length * 100 / c.max_technicians)|int]|min }}%"></span></div></div>
+      <div>Dispositivos</div><div>{{ devices }} de {{ c.max_devices or 'ilimitado' }}
+        {% if c.max_devices %}<div class="bar"><span class="{{ 'full' if devices > c.max_devices }}" style="width:{{ [100, (devices * 100 / c.max_devices)|int]|min }}%"></span></div>
+        {% if devices > c.max_devices %}<div style="color:var(--bad)">Acima do limite do plano: sugira um upgrade.</div>{% endif %}{% endif %}</div>
+    </div>
+    <details><summary>Mudar plano</summary>
+      <form method="post" action="{{ B }}/clientes/{{ c.id }}/plano">
+        <div class="fields">
+          <div><label>Plano</label><select name="plan_id">{% for p in plans %}<option value="{{ p.id }}" {{ 'selected' if p.id == c.plan_id }}>{{ p.name }} ({{ p.max_technicians }} téc.) - {{ p.price_monthly|money }}/mês · {{ p.price_yearly|money }}/ano</option>{% endfor %}</select></div>
+          <div><label>Ciclo</label><select name="cycle"><option value="monthly" {{ 'selected' if c.cycle == 'monthly' }}>Mensal</option><option value="yearly" {{ 'selected' if c.cycle == 'yearly' }}>Anual</option></select></div>
+        </div>
+        <button class="btn small">Salvar plano</button>
+      </form>
+    </details>
+    <details style="margin-top:10px"><summary>Ajustar vencimento (promessa de pagamento, cortesia)</summary>
+      <form method="post" action="{{ B }}/clientes/{{ c.id }}/vencimento" class="actions">
+        <input type="date" name="period_end" value="{{ c.period_end }}" style="max-width:200px" required>
+        <button class="btn small">Salvar data</button>
+      </form>
+      <p class="muted">Libera o acesso até a data escolhida. Faturas em aberto são refeitas a partir dela.</p>
+    </details>
+    <div class="actions" style="margin-top:14px">
+      {% if c.status == 'canceled' %}
+      <form method="post" action="{{ B }}/clientes/{{ c.id }}/status"><input type="hidden" name="action" value="reactivate"><button class="btn light small">Reabrir assinatura</button></form>
+      {% else %}
+      <form method="post" action="{{ B }}/clientes/{{ c.id }}/status" onsubmit="return confirm('Cancelar a assinatura? Os técnicos perdem o acesso na hora.')"><input type="hidden" name="action" value="cancel"><button class="btn danger small">Cancelar assinatura</button></form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Dados do cliente</h2>
+    <form method="post" action="{{ B }}/clientes/{{ c.id }}/dados">
+      <div class="fields">
+        <div><label>Nome / Razão social</label><input name="name" value="{{ c.name }}" required></div>
+        <div><label>CPF / CNPJ</label><input name="document" value="{{ c.document }}"></div>
+        <div><label>E-mail</label><input name="email" type="email" value="{{ c.email }}"></div>
+        <div><label>Telefone</label><input name="phone" value="{{ c.phone }}"></div>
+      </div>
+      <div style="margin-bottom:12px"><label>Observações</label><textarea name="notes">{{ c.notes }}</textarea></div>
+      <button class="btn light small">Salvar dados</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Técnicos (login no app ITLDesk)</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Usuário</th><th>Nome</th><th>Acesso</th><th></th></tr>
+    {% for t in techs %}
+    <tr>
+      <td><b>{{ t.username }}</b><div class="muted">{{ t.email }}</div></td>
+      <td>{{ t.nickname }}</td>
+      <td>{% if t.status != 1 %}<span class="badge b-canceled">Desativado</span>
+        {% elif t.id in allowed %}<span class="badge b-active">Liberado</span>
+        {% else %}<span class="badge b-blocked">Bloqueado</span>{% endif %}</td>
+      <td class="actions">
+        <details><summary>Trocar senha</summary>
+          <form method="post" action="{{ B }}/clientes/{{ c.id }}/tecnicos/{{ t.id }}/senha" class="actions">
+            <input name="password" type="password" minlength="8" placeholder="Nova senha" required style="max-width:180px">
+            <button class="btn small">Salvar</button></form>
+        </details>
+        <form method="post" action="{{ B }}/clientes/{{ c.id }}/tecnicos/{{ t.id }}/remover" onsubmit="return confirm('Remover {{ t.username }}? Ele será desconectado.')"><button class="btn danger small">Remover</button></form>
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="4" class="muted">Nenhum técnico ainda.</td></tr>{% endfor %}
+  </table></div>
+  {% if active_techs|length < c.max_technicians %}
+  <details style="margin-top:12px" {{ 'open' if not techs }}><summary>+ Adicionar técnico</summary>
+    <form method="post" action="{{ B }}/clientes/{{ c.id }}/tecnicos">
+      <div class="fields">
+        <div><label>Usuário (login)</label><input name="username" required pattern="[a-zA-Z0-9_.@\-]{3,64}"></div>
+        <div><label>Senha (mín. 8)</label><input name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+        <div><label>Nome</label><input name="nickname"></div>
+        <div><label>E-mail</label><input name="email" type="email"></div>
+      </div>
+      <button class="btn small">Criar técnico</button>
+    </form>
+  </details>
+  {% else %}<p class="muted" style="margin-top:12px">Limite de técnicos do plano atingido.</p>{% endif %}
+  <p class="muted">O técnico entra no app ITLDesk pelo ícone de conta (canto superior) com este usuário e senha. Sem login, ou com a assinatura bloqueada, ele não consegue iniciar acessos.</p>
+</div>
+
+<div class="card">
+  <h2>Faturas</h2>
+  <div class="table-wrap"><table>
+    <tr><th>#</th><th>Período</th><th>Vencimento</th><th class="num">Valor</th><th>Situação</th><th>Pagamento</th><th></th></tr>
+    {% for i in invoices %}
+    <tr>
+      <td>{{ i.id }}</td>
+      <td>{{ i.period_start|brdate }} a {{ i.period_end|brdate }}</td>
+      <td>{{ i.due_date|brdate }}</td>
+      <td class="num">{{ i.amount|money }}</td>
+      <td><span class="badge b-{{ i.status }}">{{ {'pending':'Em aberto','paid':'Paga','canceled':'Cancelada'}[i.status] }}</span></td>
+      <td>{% if i.status == 'paid' %}{{ i.paid_method }} em {{ i.paid_at|brdate }}{% endif %}</td>
+      <td class="actions">
+        {% if i.status == 'pending' %}
+        <a class="btn light small" href="{{ public_url(i.public_token) }}" target="_blank">Link do cliente</a>
+        {% if mp_enabled() and not i.payment_url %}<form method="post" action="{{ B }}/faturas/{{ i.id }}/link"><input type="hidden" name="back" value="{{ back }}"><button class="btn light small">Gerar link MP</button></form>{% endif %}
+        <form method="post" action="{{ B }}/faturas/{{ i.id }}/pagar" onsubmit="return confirm('Registrar pagamento manual da fatura #{{ i.id }}?')">
+          <input type="hidden" name="back" value="{{ back }}"><input type="hidden" name="method" value="Manual"><button class="btn small">Marcar paga</button></form>
+        {% endif %}
+      </td>
+    </tr>
+    {% if i.status == 'pending' %}<tr><td></td><td colspan="6" class="muted">Envie ao cliente: <span class="copy">{{ public_url(i.public_token) }}</span></td></tr>{% endif %}
+    {% else %}<tr><td colspan="7" class="muted">Nenhuma fatura.</td></tr>{% endfor %}
+  </table></div>
+</div>
+
+<div class="card">
+  <h2>Histórico</h2>
+  <table>{% for e in events %}
+    <tr><td class="muted" style="white-space:nowrap;width:120px">{{ e.at[8:10] }}/{{ e.at[5:7] }}/{{ e.at[0:4] }} {{ e.at[11:16] }}</td><td>{{ e.message }}</td></tr>
+  {% endfor %}</table>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ITLDesk - Acesso remoto com servidor no Brasil{% endblock %}</title>
+<meta name="description" content="ITLDesk: acesso remoto rápido e seguro para equipes de suporte, com servidor no Brasil. Planos a partir de R$ 49/mês.">
+<link rel="icon" href="{{ B }}/static/favicon.ico">
+<link rel="stylesheet" href="{{ B }}/static/site.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="/"><img src="{{ B }}/static/logo.png" alt="">ITLDesk</a>
+  <nav>
+    <a href="/#recursos">Recursos</a>
+    <a href="/#como-funciona">Como funciona</a>
+    <a href="/#planos">Planos</a>
+    <a href="/#duvidas">Dúvidas</a>
+    <a href="/#download">Download</a>
+  </nav>
+  <a class="btn btn-primary" href="/assinar">{{ 'Teste grátis' if SITE.SIGNUP_MODE == 'trial' else 'Assinar' }}</a>
+</div></header>
+{% block content %}{% endblock %}
+<footer><div class="wrap">
+  <div>© {{ SITE.COMPANY_NAME }} · ITLDesk</div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap">
+    {% if SITE.SUPPORT_WHATSAPP %}<a href="https://wa.me/{{ SITE.SUPPORT_WHATSAPP }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
+    {% if SITE.SUPPORT_EMAIL %}<a href="mailto:{{ SITE.SUPPORT_EMAIL }}">{{ SITE.SUPPORT_EMAIL }}</a>{% endif %}
+    <a href="/termos">Termos de uso</a>
+    <a href="{{ SITE.SOURCE_URL }}" target="_blank" rel="noopener">Código-fonte (AGPL-3.0)</a>
+  </div>
+</div></footer>
+</body>
+</html>

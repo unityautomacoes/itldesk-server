@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Faturas{% endblock %}
+{% block content %}
+<h1>Faturas</h1>
+<div class="actions" style="margin-bottom:12px">
+  {% for k, label in [('pending','Em aberto'),('paid','Pagas'),('canceled','Canceladas'),('all','Todas')] %}
+  <a class="btn small {{ '' if status == k else 'light' }}" href="{{ B }}/faturas?status={{ k }}">{{ label }}</a>
+  {% endfor %}
+</div>
+<div class="card table-wrap"><table>
+  <tr><th>#</th><th>Cliente</th><th>Período</th><th>Vencimento</th><th class="num">Valor</th><th>Situação</th><th></th></tr>
+  {% for i in invoices %}
+  <tr>
+    <td>{{ i.id }}</td>
+    <td><a href="{{ B }}/clientes/{{ i.customer_id }}">{{ i.customer }}</a></td>
+    <td>{{ i.period_start|brdate }} a {{ i.period_end|brdate }}</td>
+    <td>{{ i.due_date|brdate }}</td>
+    <td class="num">{{ i.amount|money }}</td>
+    <td><span class="badge b-{{ i.status }}">{{ {'pending':'Em aberto','paid':'Paga','canceled':'Cancelada'}[i.status] }}</span>
+      {% if i.status == 'paid' %}<div class="muted">{{ i.paid_method }} · {{ i.paid_at|brdate }}</div>{% endif %}</td>
+    <td class="actions">
+      {% if i.status == 'pending' %}
+      <a class="btn light small" href="{{ public_url(i.public_token) }}" target="_blank">Link do cliente</a>
+      <form method="post" action="{{ B }}/faturas/{{ i.id }}/pagar" onsubmit="return confirm('Registrar pagamento manual da fatura #{{ i.id }}?')">
+        <input type="hidden" name="back" value="/faturas"><button class="btn small">Marcar paga</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% else %}<tr><td colspan="7" class="muted">Nenhuma fatura.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

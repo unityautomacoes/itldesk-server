@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Entrar{% endblock %}
+{% block body %}
+<div class="center-page"><div class="card">
+  <div class="logo-head"><img src="{{ B }}/static/logo.png" alt=""><h1 style="margin:8px 0 0">ITLDesk Cobrança</h1>
+  <p class="muted">Entre com um administrador do painel ITLDesk</p></div>
+  {% if error %}<div class="flash err">{{ error }}</div>{% endif %}
+  <form method="post" action="{{ B }}/login">
+    <div style="margin-bottom:12px"><label>Usuário</label><input name="username" autocomplete="username" required autofocus></div>
+    <div style="margin-bottom:16px"><label>Senha</label><input name="password" type="password" autocomplete="current-password" required></div>
+    <button class="btn" style="width:100%">Entrar</button>
+  </form>
+</div></div>
+{% endblock %}
