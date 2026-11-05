@@ -4,7 +4,8 @@
 // Variáveis de ambiente:
 //   ITLDESK_MUST_LOGIN=Y             exige login para iniciar conexões
 //   RUSTDESK_API_JWT_KEY=<chave>     mesma chave JWT do painel (obrigatória com MUST_LOGIN)
-//   ITLDESK_ALLOWED_USERS_FILE=...   arquivo JSON {"user_ids":[...]} (padrão: itldesk_allowed_users.json)
+//   ITLDESK_ALLOWED_USERS_FILE=...   arquivo JSON {"user_ids":[...],"free_user_ids":[...]}
+//                                    (padrão: itldesk_allowed_users.json; free_user_ids = plano gratuito)
 //
 // Sem o arquivo de lista, vale só a exigência de login (nenhuma assinatura é checada).
 
@@ -62,6 +63,8 @@ struct Claims {
 #[derive(Deserialize)]
 struct AllowedFile {
     user_ids: Vec<u64>,
+    #[serde(default)]
+    free_user_ids: Vec<u64>,
 }
 
 #[derive(Default)]
@@ -70,6 +73,7 @@ struct AllowedCache {
     mtime: Option<SystemTime>,
     // None = arquivo ausente: não checa assinatura
     users: Option<HashSet<u64>>,
+    free: HashSet<u64>,
     warned_missing: bool,
 }
 
@@ -100,6 +104,7 @@ fn refresh_allowed() {
                 log::warn!("ITLDesk: lista de assinantes {} não encontrada; checando só o login", path);
             }
             cache.users = None;
+            cache.free.clear();
             cache.mtime = None;
             return;
         }
@@ -117,6 +122,7 @@ fn refresh_allowed() {
         Ok(f) => {
             log::info!("ITLDesk: lista de assinantes carregada ({} técnicos)", f.user_ids.len());
             cache.users = Some(f.user_ids.into_iter().collect());
+            cache.free = f.free_user_ids.into_iter().collect();
             cache.mtime = Some(mtime);
         }
         // mantém a lista anterior se o arquivo estiver sendo regravado
@@ -127,9 +133,20 @@ fn refresh_allowed() {
 /// Valida o token do técnico que está iniciando uma conexão.
 /// Retorna a mensagem a mostrar no cliente quando a conexão deve ser recusada.
 pub fn check_controller(token: &str) -> Result<(), &'static str> {
+    controller_access(token).map(|_| ())
+}
+
+/// Técnico autorizado a iniciar a conexão.
+pub struct Access {
+    /// Some(user_id) se o técnico é do plano gratuito
+    pub free_user: Option<u64>,
+}
+
+/// Como `check_controller`, informando também se o técnico é do plano gratuito.
+pub fn controller_access(token: &str) -> Result<Access, &'static str> {
     let settings = &*SETTINGS;
     if !settings.must_login {
-        return Ok(());
+        return Ok(Access { free_user: None });
     }
     if token.is_empty() {
         return Err(MSG_LOGIN);
@@ -149,6 +166,11 @@ pub fn check_controller(token: &str) -> Result<(), &'static str> {
     let cache = ALLOWED.read().unwrap_or_else(|e| e.into_inner());
     match &cache.users {
         Some(users) if !users.contains(&claims.user_id) => Err(MSG_SUBSCRIPTION),
-        _ => Ok(()),
+        _ => Ok(Access {
+            free_user: cache
+                .free
+                .contains(&claims.user_id)
+                .then_some(claims.user_id),
+        }),
     }
 }

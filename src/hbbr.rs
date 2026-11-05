@@ -1,5 +1,6 @@
 use clap::App;
 mod common;
+mod itldesk_free;
 mod relay_server;
 use flexi_logger::*;
 use hbb_common::{config::RELAY_PORT, ResultType};
@@ -45,6 +46,7 @@ fn main() -> ResultType<()> {
         .value_of("key")
         .map(str::to_owned)
         .unwrap_or_else(|| common::get_arg("KEY"));
+    itldesk_free::init_relay();
     start_with_bind(
         bind_addr,
         matches.value_of("port").unwrap_or(&port.to_string()),

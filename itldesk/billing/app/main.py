@@ -600,6 +600,9 @@ def site_signup_post(
     service.write_allowed_file()
     _signups[ip].append(now)
     log.info("Novo cadastro pelo site: cliente %s (%s)", cid, values["email"])
+    if not inv:  # plano gratuito: sem fatura
+        return render(request, "site/done.html", inv=None, free_name=values["name"], plan_name=plan["name"],
+                      username=values["username"], downloads=_downloads(), invoice_url="", user=None)
     return RedirectResponse(f"/assinar/pronto/{inv['public_token']}", status_code=303)
 
 

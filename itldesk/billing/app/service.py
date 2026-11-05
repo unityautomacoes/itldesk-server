@@ -22,6 +22,12 @@ STATUS_LABELS = {
 # assinaturas cujos técnicos podem iniciar acessos
 ALLOWED_STATUSES = ("trial", "active", "past_due")
 CYCLE_LABELS = {"monthly": "Mensal", "yearly": "Anual"}
+# plano gratuito: não vence nem gera fatura; o hbbs/hbbr limitam as sessões
+FREE_PERIOD_END = date(2099, 12, 31)
+
+
+def is_free_plan(plan) -> bool:
+    return plan["price_monthly"] == 0 and plan["price_yearly"] == 0
 
 
 def today() -> date:
@@ -191,6 +197,10 @@ def check_mp_payment(payment_id: str) -> bool:
 # ---------------------------------------------------------------- assinaturas
 
 def create_customer(name, document, email, phone, notes, plan_id, cycle, start_mode, by="") -> int:
+    with db.billing() as b:
+        plan = b.execute("SELECT * FROM plans WHERE id = ?", (plan_id,)).fetchone()
+    if plan and is_free_plan(plan):
+        start_mode = "free"
     group_id = db.rd_create_group(f"Cliente: {name}")
     with db.billing() as b:
         cur = b.execute(
@@ -203,6 +213,8 @@ def create_customer(name, document, email, phone, notes, plan_id, cycle, start_m
             status, end = "trial", t + timedelta(days=config.TRIAL_DAYS - 1)
         elif start_mode == "paid":
             status, end = "active", cycle_end(t, cycle)
+        elif start_mode == "free":
+            status, end = "active", FREE_PERIOD_END
         else:
             status, end = "pending", t - timedelta(days=1)
         cur = b.execute(
@@ -235,6 +247,13 @@ def change_plan(customer_id: int, plan_id: int, cycle: str, by=""):
             "UPDATE subscriptions SET plan_id = ?, cycle = ?, updated_at = ? WHERE id = ?",
             (plan_id, cycle, db.now_iso(), sub["id"]),
         )
+        old_plan = b.execute("SELECT * FROM plans WHERE id = ?", (sub["plan_id"],)).fetchone()
+        if is_free_plan(old_plan) and not is_free_plan(plan) and sub["status"] != "canceled":
+            # saiu do gratuito: o plano pago começa quando a 1ª fatura for paga
+            b.execute(
+                "UPDATE subscriptions SET status = 'pending', period_end = ?, updated_at = ? WHERE id = ?",
+                ((today() - timedelta(days=1)).isoformat(), db.now_iso(), sub["id"]),
+            )
         # faturas em aberto são refeitas com o novo valor
         b.execute(
             "UPDATE invoices SET status = 'canceled' WHERE subscription_id = ? AND status = 'pending'", (sub["id"],)
@@ -283,8 +302,23 @@ def run_cycle(poll_mp: bool = True):
     """Rotina periódica: vencimento, carência, bloqueio, novas faturas e confirmação de pagamentos."""
     t = today()
     with db.billing() as b:
-        subs = b.execute("SELECT * FROM subscriptions WHERE status != 'canceled'").fetchall()
+        subs = b.execute(
+            "SELECT s.*, p.price_monthly, p.price_yearly FROM subscriptions s JOIN plans p ON p.id = s.plan_id"
+            " WHERE s.status != 'canceled'"
+        ).fetchall()
         for sub in subs:
+            if is_free_plan(sub):
+                if sub["status"] != "active" or sub["period_end"] != FREE_PERIOD_END.isoformat():
+                    b.execute(
+                        "UPDATE subscriptions SET status = 'active', period_end = ?, updated_at = ? WHERE id = ?",
+                        (FREE_PERIOD_END.isoformat(), db.now_iso(), sub["id"]),
+                    )
+                    b.execute(
+                        "UPDATE invoices SET status = 'canceled' WHERE subscription_id = ? AND status = 'pending'",
+                        (sub["id"],),
+                    )
+                    db.log_event(b, sub["customer_id"], "Assinatura no plano gratuito (sem vencimento)")
+                continue
             end = parse_date(sub["period_end"])
             status = sub["status"]
             if status in ("trial", "active") and t > end:
@@ -329,9 +363,25 @@ def allowed_user_ids():
     return sorted(ids)
 
 
+def free_user_ids():
+    """Técnicos liberados que estão no plano gratuito (sessões limitadas pelo hbbs/hbbr)."""
+    admins = set(db.rd_admin_ids())
+    with db.billing() as b:
+        rows = b.execute(
+            "SELECT c.rd_group_id FROM subscriptions s"
+            " JOIN customers c ON c.id = s.customer_id JOIN plans p ON p.id = s.plan_id"
+            " WHERE s.status != 'canceled' AND p.price_monthly = 0 AND p.price_yearly = 0",
+        ).fetchall()
+    ids = set()
+    for r in rows:
+        ids.update(u["id"] for u in db.rd_group_users(r["rd_group_id"]) if u["status"] == 1)
+    return sorted(ids - admins)
+
+
 def write_allowed_file():
     try:
         ids = allowed_user_ids()
+        free = free_user_ids()
     except Exception as e:  # noqa: BLE001 - sem lista nova, o hbbs segue com a anterior
         log.error("Erro ao montar lista de técnicos liberados: %s", e)
         return
@@ -339,6 +389,6 @@ def write_allowed_file():
     folder = os.path.dirname(path) or "."
     fd, tmp = tempfile.mkstemp(dir=folder, prefix=".allowed-")
     with os.fdopen(fd, "w") as f:
-        json.dump({"generated_at": db.now_iso(), "user_ids": ids}, f)
+        json.dump({"generated_at": db.now_iso(), "user_ids": ids, "free_user_ids": free}, f)
     os.chmod(tmp, 0o644)
     os.replace(tmp, path)

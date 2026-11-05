@@ -568,9 +568,20 @@ impl RendezvousServer {
                         );
                         return false;
                     }
-                    if let Err(reason) = crate::itldesk_auth::check_controller(&rf.token) {
-                        log::info!("ITLDesk: relay de {} para {} recusado: {}", addr, rf.id, reason);
-                        return false;
+                    match crate::itldesk_auth::controller_access(&rf.token) {
+                        Err(reason) => {
+                            log::info!("ITLDesk: relay de {} para {} recusado: {}", addr, rf.id, reason);
+                            return false;
+                        }
+                        Ok(access) => {
+                            if let Some(user_id) = access.free_user {
+                                if crate::itldesk_free::is_busy(user_id) {
+                                    log::info!("ITLDesk: relay de {} recusado: técnico gratuito já em sessão", addr);
+                                    return false;
+                                }
+                                crate::itldesk_free::grant(&rf.uuid, user_id);
+                            }
+                        }
                     }
                     // there maybe several attempt, so sink can be none
                     if let Some(sink) = sink.take() {
@@ -595,6 +606,10 @@ impl RendezvousServer {
                     }
                     let addr_b = AddrMangle::decode(&rr.socket_addr);
                     rr.socket_addr = Default::default();
+                    if crate::itldesk_free::on_relay_response(try_into_v4(addr_b), &rr.uuid) {
+                        // sem atalho por IPv6: a sessão gratuita fica no relay
+                        rr.socket_addr_v6 = Default::default();
+                    }
                     let id = rr.id();
                     if !id.is_empty() {
                         let pk = self.get_pk(&rr.version, id.to_owned()).await;
@@ -776,14 +791,27 @@ impl RendezvousServer {
             });
             return Ok((msg_out, None));
         }
-        if let Err(reason) = crate::itldesk_auth::check_controller(&ph.token) {
-            log::info!("ITLDesk: conexão de {} para {} recusada: {}", addr, ph.id, reason);
-            let mut msg_out = RendezvousMessage::new();
-            msg_out.set_punch_hole_response(PunchHoleResponse {
-                other_failure: reason.to_owned(),
-                ..Default::default()
-            });
-            return Ok((msg_out, None));
+        let free_user = match crate::itldesk_auth::controller_access(&ph.token) {
+            Ok(access) => access.free_user,
+            Err(reason) => {
+                log::info!("ITLDesk: conexão de {} para {} recusada: {}", addr, ph.id, reason);
+                let mut msg_out = RendezvousMessage::new();
+                msg_out.set_punch_hole_response(PunchHoleResponse {
+                    other_failure: reason.to_owned(),
+                    ..Default::default()
+                });
+                return Ok((msg_out, None));
+            }
+        };
+        if let Some(user_id) = free_user {
+            if crate::itldesk_free::is_busy(user_id) {
+                let mut msg_out = RendezvousMessage::new();
+                msg_out.set_punch_hole_response(PunchHoleResponse {
+                    other_failure: crate::itldesk_free::MSG_FREE_BUSY.to_owned(),
+                    ..Default::default()
+                });
+                return Ok((msg_out, None));
+            }
         }
         let id = ph.id;
         // punch hole request from A, relay to B,
@@ -824,7 +852,13 @@ impl RendezvousServer {
                 }
                 ph.nat_type = NatType::SYMMETRIC.into(); // will force relay
             }
-            let same_intranet: bool = !ws
+            // plano gratuito: sempre pelo relay, onde a sessão é limitada
+            if let Some(user_id) = free_user {
+                crate::itldesk_free::note_controller(try_into_v4(addr), user_id);
+                ph.nat_type = NatType::SYMMETRIC.into();
+            }
+            let same_intranet: bool = free_user.is_none()
+                && !ws
                 && (peer_is_lan && is_lan || {
                     match (peer_addr, addr) {
                         (SocketAddr::V4(a), SocketAddr::V4(b)) => a.ip() == b.ip(),
@@ -856,6 +890,7 @@ impl RendezvousServer {
                     socket_addr,
                     nat_type: ph.nat_type,
                     relay_server,
+                    force_relay: free_user.is_some(),
                     ..Default::default()
                 });
             }

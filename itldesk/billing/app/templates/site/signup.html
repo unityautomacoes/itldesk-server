@@ -50,9 +50,11 @@
       <ul>
         <li id="s-tech"></li>
         <li id="s-dev"></li>
-        {% if signup_mode == 'trial' %}<li>{{ TRIAL_DAYS }} dias grátis; a 1ª cobrança vence no fim do teste</li>{% endif %}
-        <li>Pix, boleto ou cartão (Mercado Pago)</li>
-        <li>{{ GRACE_DAYS }} dias de carência se atrasar</li>
+        {% if signup_mode == 'trial' %}<li class="paid-only">{{ TRIAL_DAYS }} dias grátis; a 1ª cobrança vence no fim do teste</li>{% endif %}
+        <li class="paid-only">Pix, boleto ou cartão (Mercado Pago)</li>
+        <li class="paid-only">{{ GRACE_DAYS }} dias de carência se atrasar</li>
+        <li class="free-only">1 sessão por vez, de até 5 minutos cada</li>
+        <li class="free-only">Sem cartão e sem cobrança</li>
       </ul>
     </aside>
   </form>
@@ -69,7 +71,17 @@
     document.getElementById('s-sub').textContent = yearly ? 'equivale a ' + brl(Math.round(y / 12)) + '/mês' : 'cobrança mensal';
     document.getElementById('s-tech').textContent = t + (t > 1 ? ' técnicos' : ' técnico') + ' com login próprio';
     document.getElementById('s-dev').textContent = o.dataset.dev ? 'Até ' + o.dataset.dev + ' dispositivos gerenciados' : 'Dispositivos ilimitados';
+    var free = m === 0 && y === 0;
+    if (free) {
+      document.getElementById('s-price').textContent = 'Grátis';
+      document.getElementById('s-sub').textContent = 'sem cobrança';
+    }
+    cycle.closest('.f').style.display = free ? 'none' : '';
+    document.querySelectorAll('.paid-only').forEach(function (e) { e.style.display = free ? 'none' : ''; });
+    document.querySelectorAll('.free-only').forEach(function (e) { e.style.display = free ? '' : 'none'; });
+    submitBtn.textContent = free ? 'Criar conta grátis' : submitText;
   }
+  var submitBtn = document.querySelector('form button.btn-primary'), submitText = submitBtn.textContent;
   plan.addEventListener('change', update); cycle.addEventListener('change', update); update();
 })();
 </script>

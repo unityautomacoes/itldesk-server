@@ -1,0 +1,103 @@
+# Mensagens do painel (itldesk-api) em português do Brasil
+[Test]
+one = "teste"
+other = "Teste {{.P0}}"
+[ParamsError]
+one = "Dados inválidos."
+other = "Dados inválidos."
+[OperationFailed]
+one = "A operação falhou."
+other = "A operação falhou."
+[OperationSuccess]
+one = "Operação concluída."
+other = "Operação concluída."
+[ItemExists]
+one = "Esse item já existe."
+other = "Esse item já existe."
+[ItemNotFound]
+one = "Item não encontrado."
+other = "Item não encontrado."
+[NoAccess]
+one = "Sem permissão."
+other = "Sem permissão."
+[NeedLogin]
+one = "Faça login primeiro."
+other = "Faça login primeiro."
+[UsernameOrPasswordError]
+one = "Usuário ou senha incorretos."
+other = "Usuário ou senha incorretos."
+[SystemError]
+one = "Erro no sistema."
+other = "Erro no sistema."
+[ConfigNotFound]
+one = "Configuração não encontrada."
+other = "Configuração não encontrada."
+[OauthExpired]
+one = "O login OAuth expirou, tente de novo."
+other = "O login OAuth expirou, tente de novo."
+[OauthFailed]
+one = "Falha no OAuth."
+other = "Falha no OAuth."
+[OauthHasBindOtherUser]
+one = "Essa conta OAuth já está vinculada a outro usuário."
+other = "Essa conta OAuth já está vinculada a outro usuário."
+[ParamIsEmpty]
+one = "{{.P0}} está vazio."
+other = "{{.P0}} está vazio."
+[BindFail]
+one = "Não foi possível vincular."
+other = "Não foi possível vincular."
+[BindSuccess]
+one = "Vínculo feito."
+other = "Vínculo feito."
+[OauthHasBeenSuccess]
+one = "OAuth já concluído."
+other = "OAuth já concluído."
+[OauthSuccess]
+one = "OAuth concluído."
+other = "OAuth concluído."
+[OauthRegisterSuccess]
+one = "Cadastro por OAuth concluído."
+other = "Cadastro por OAuth concluído."
+[OauthRegisterFailed]
+one = "Falha no cadastro por OAuth."
+other = "Falha no cadastro por OAuth."
+[GetOauthTokenError]
+one = "Erro ao obter o token OAuth."
+other = "Erro ao obter o token OAuth."
+[GetOauthUserInfoError]
+one = "Erro ao obter os dados do usuário OAuth."
+other = "Erro ao obter os dados do usuário OAuth."
+[DecodeOauthUserInfoError]
+one = "Erro ao ler os dados do usuário OAuth."
+other = "Erro ao ler os dados do usuário OAuth."
+[OldPasswordError]
+one = "A senha atual está incorreta."
+other = "A senha atual está incorreta."
+[DefaultGroup]
+one = "Grupo padrão"
+other = "Grupo padrão"
+[ShareGroup]
+one = "Grupo compartilhado"
+other = "Grupo compartilhado"
+[RegisterClosed]
+one = "Cadastro fechado."
+other = "Cadastro fechado."
+[CaptchaRequired]
+one = "Informe o código de verificação."
+other = "Informe o código de verificação."
+[CaptchaError]
+one = "Código de verificação incorreto."
+other = "Código de verificação incorreto."
+[PwdLoginDisabled]
+one = "Login por senha desativado."
+other = "Login por senha desativado."
+[CannotShareToSelf]
+one = "Não é possível compartilhar com você mesmo."
+other = "Não é possível compartilhar com você mesmo."
+[Banned]
+one = "Usuário bloqueado."
+other = "Usuário bloqueado."
+[RegisterSuccessWaitAdminConfirm]
+one = "Cadastro feito, aguarde a aprovação do administrador."
+other = "Cadastro feito, aguarde a aprovação do administrador."

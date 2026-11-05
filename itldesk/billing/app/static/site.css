@@ -80,7 +80,7 @@ section.alt { background: var(--soft); }
 .toggle button.on { background: var(--blue); color: #fff; }
 .toggle .save { color: var(--orange-d); font-size: 12px; margin-left: 4px; }
 .toggle button.on .save { color: #ffd9a6; }
-.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; align-items: stretch; }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 18px; align-items: stretch; }
 .plan { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 30px 26px; display: flex; flex-direction: column; position: relative; }
 .plan.featured { border: 2px solid var(--blue); box-shadow: 0 24px 50px -24px rgba(31,58,143,.35); }
 .plan .tag { position: absolute; top: -13px; left: 26px; background: var(--blue); color: #fff; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 999px; letter-spacing: .03em; }

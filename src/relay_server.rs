@@ -471,6 +471,13 @@ async fn make_pair_(stream: impl StreamTrait, addr: SocketAddr, key: &str, limit
                     let mut peer = PEERS.lock().await.remove(&rf.uuid);
                     if let Some(peer) = peer.as_mut() {
                         log::info!("Relayrequest {} from {} got paired", rf.uuid, addr);
+                        let free = match crate::itldesk_free::relay_start(&rf.uuid) {
+                            Ok(free) => free,
+                            Err(reason) => {
+                                log::info!("ITLDesk: relay {} recusado: {}", rf.uuid, reason);
+                                return;
+                            }
+                        };
                         let id = format!("{}:{}", addr.ip(), addr.port());
                         USAGE.write().await.insert(id.clone(), Default::default());
                         if !stream.is_ws() && !peer.is_ws() {
@@ -478,7 +485,11 @@ async fn make_pair_(stream: impl StreamTrait, addr: SocketAddr, key: &str, limit
                             stream.set_raw();
                             log::info!("Both are raw");
                         }
-                        if let Err(err) = relay(addr, &mut stream, peer, limiter, id.clone()).await
+                        if let Err(err) = crate::itldesk_free::run_limited(
+                            free.as_ref(),
+                            relay(addr, &mut stream, peer, limiter, id.clone()),
+                        )
+                        .await
                         {
                             log::info!("Relay of {} closed: {}", addr, err);
                         } else {

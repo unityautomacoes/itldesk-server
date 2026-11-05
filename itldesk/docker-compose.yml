@@ -36,6 +36,9 @@ services:
       dockerfile: itldesk/Dockerfile
     image: itldesk-server:latest
     command: hbbr -k _
+    environment:
+      # plano gratuito: duração máxima de cada sessão (segundos)
+      - ITLDESK_FREE_SESSION_SECS=${ITLDESK_FREE_SESSION_SECS:-300}
     ports:
       - "21117:21117"       # TCP - relay
       - "21119:21119"       # TCP - relay web client (opcional)
@@ -63,6 +66,9 @@ services:
       - ./data:/data:ro           # lê a chave pública do hbbs
       - ./api-data:/app/data      # banco de dados do painel
       - ./admin-ui:/app/resources/admin:ro   # painel com logo/título ITLDesk (gerado de lejianwen/rustdesk-api:v2.7)
+      # português do Brasil: textos do painel (admin-i18n/patch-admin-ui.js), boas-vindas e mensagens da API
+      - ./admin-i18n/hello.html:/app/conf/admin/hello.html:ro
+      - ./admin-i18n/pt_BR.toml:/app/resources/i18n/pt_BR.toml:ro
     depends_on:
       - hbbs
     restart: unless-stopped

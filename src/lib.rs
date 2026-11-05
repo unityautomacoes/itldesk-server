@@ -3,5 +3,6 @@ pub use rendezvous_server::*;
 pub mod common;
 mod database;
 pub mod itldesk_auth;
+pub mod itldesk_free;
 mod peer;
 mod version;

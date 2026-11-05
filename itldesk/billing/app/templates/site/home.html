@@ -62,8 +62,26 @@
     </div>
   </div>
   <div class="plans" id="plan-list">
+    {% set paid = plans|rejectattr('price_monthly', 'equalto', 0)|list %}
     {% for p in plans %}
-    {% set featured = (plans|length >= 3 and loop.index == 2) or plans|length == 1 %}
+    {% set free = p.price_monthly == 0 and p.price_yearly == 0 %}
+    {% if free %}
+    <div class="plan">
+      <h3>{{ p.name }}</h3>
+      <div class="desc">{{ p.description }}</div>
+      <div class="price">R$ 0 <small>/mês</small></div>
+      <div class="sub">sem cartão, sem prazo</div>
+      <ul>
+        <li><b>1 técnico</b> com login próprio</li>
+        <li><b>1 sessão por vez</b></li>
+        <li>Cada sessão dura até <b>5 minutos</b> (é só reconectar)</li>
+        <li>Transferência de arquivos e chat</li>
+        <li>Servidor no Brasil</li>
+      </ul>
+      <a class="btn btn-ghost btn-block" href="/assinar?plano={{ p.id }}&ciclo=monthly">Criar conta grátis</a>
+    </div>
+    {% else %}
+    {% set featured = (paid|length >= 3 and p.id == paid[1].id) or paid|length == 1 %}
     <div class="plan {{ 'featured' if featured }}">
       {% if featured %}<span class="tag">MAIS ESCOLHIDO</span>{% endif %}
       <h3>{{ p.name }}</h3>
@@ -80,6 +98,7 @@
       </ul>
       <a class="btn {{ 'btn-primary' if featured else 'btn-blue' }} btn-block plan-link" data-plan="{{ p.id }}" href="/assinar?plano={{ p.id }}&ciclo=monthly">{{ 'Testar grátis' if SITE.SIGNUP_MODE == 'trial' else 'Assinar' }}</a>
     </div>
+    {% endif %}
     {% endfor %}
   </div>
 </div></section>
