@@ -1,6 +1,6 @@
-// ITLDesk: troca de chaves na conexão TCP do hbbs (porta 21116).
+// UnityDesk: troca de chaves na conexão TCP do hbbs (porta 21116).
 //
-// O cliente ITLDesk logado (com token) espera o hbbs abrir a conversa com um
+// O cliente UnityDesk logado (com token) espera o hbbs abrir a conversa com um
 // KeyExchange assinado pela chave do servidor e só depois manda o pedido de
 // conexão, já criptografado. O hbbs original não faz isso, e o cliente desiste
 // com "Failed to secure tcp: deadline has elapsed".

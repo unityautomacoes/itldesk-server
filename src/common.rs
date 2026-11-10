@@ -122,7 +122,7 @@ pub fn set_arg(name: &str, value: &str) {
 pub fn init_args(args: &str, name: &str, about: &str) {
     let matches = App::new(name)
         .version(crate::version::VERSION)
-        .author("ITLDesk (baseado no RustDesk Server - AGPL-3.0)")
+        .author("UnityDesk (baseado no RustDesk Server - AGPL-3.0)")
         .about(about)
         .args_from_usage(args)
         .get_matches();

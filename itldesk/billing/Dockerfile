@@ -1,4 +1,4 @@
-# ITLDesk Cobrança - planos, clientes, técnicos e faturas (Mercado Pago)
+# UnityDesk Cobrança - planos, clientes, técnicos e faturas (Mercado Pago)
 FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /srv

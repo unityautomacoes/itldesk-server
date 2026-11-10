@@ -53,7 +53,7 @@ type WsSink = SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, tungsteni
 enum Sink {
     TcpStream(TcpStreamSink),
     Ws(WsSink),
-    // ITLDesk: conexão TCP criptografada após a troca de chaves (itldesk_kx)
+    // UnityDesk: conexão TCP criptografada após a troca de chaves (itldesk_kx)
     Secure(TcpStreamSink, hbb_common::tcp::Encrypt),
 }
 type Sender = mpsc::UnboundedSender<Data>;
@@ -570,15 +570,15 @@ impl RendezvousServer {
                         );
                         return false;
                     }
-                    match crate::itldesk_auth::controller_access(&rf.token) {
+                    match crate::itldesk_auth::controller_access_at(&rf.token, addr) {
                         Err(reason) => {
-                            log::info!("ITLDesk: relay de {} para {} recusado: {}", addr, rf.id, reason);
+                            log::info!("UnityDesk: relay de {} para {} recusado: {}", addr, rf.id, reason);
                             return false;
                         }
                         Ok(access) => {
                             if let Some(user_id) = access.free_user {
                                 if crate::itldesk_free::is_busy(user_id) {
-                                    log::info!("ITLDesk: relay de {} recusado: técnico gratuito já em sessão", addr);
+                                    log::info!("UnityDesk: relay de {} recusado: técnico gratuito já em sessão", addr);
                                     return false;
                                 }
                                 crate::itldesk_free::grant(&rf.uuid, user_id);
@@ -793,10 +793,10 @@ impl RendezvousServer {
             });
             return Ok((msg_out, None));
         }
-        let free_user = match crate::itldesk_auth::controller_access(&ph.token) {
+        let free_user = match crate::itldesk_auth::controller_access_at(&ph.token, addr) {
             Ok(access) => access.free_user,
             Err(reason) => {
-                log::info!("ITLDesk: conexão de {} para {} recusada: {}", addr, ph.id, reason);
+                log::info!("UnityDesk: conexão de {} para {} recusada: {}", addr, ph.id, reason);
                 let mut msg_out = RendezvousMessage::new();
                 msg_out.set_punch_hole_response(PunchHoleResponse {
                     other_failure: reason.to_owned(),
@@ -1317,7 +1317,7 @@ impl RendezvousServer {
         } else {
             let (a, mut b) = Framed::new(stream, BytesCodec::new()).split();
             sink = Some(Sink::TcpStream(a));
-            // ITLDesk: cliente calado está esperando a troca de chaves (itldesk_kx)
+            // UnityDesk: cliente calado está esperando a troca de chaves (itldesk_kx)
             let mut first = None;
             let mut dec: Option<hbb_common::tcp::Encrypt> = None;
             match timeout(crate::itldesk_kx::OFFER_AFTER_MS, b.next()).await {

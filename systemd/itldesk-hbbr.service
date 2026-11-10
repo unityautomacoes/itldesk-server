@@ -1,6 +1,6 @@
 
 [Unit]
-Description=ITLDesk Relay Server
+Description=UnityDesk Relay Server
 
 [Service]
 Type=simple

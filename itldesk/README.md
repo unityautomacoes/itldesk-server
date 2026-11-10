@@ -1,6 +1,6 @@
-# ITLDesk Server
+# UnityDesk Server
 
-Servidor próprio de acesso remoto ITLDesk, baseado no
+Servidor próprio de acesso remoto UnityDesk, baseado no
 [RustDesk Server](https://github.com/rustdesk/rustdesk-server) (licença AGPL-3.0).
 
 São dois serviços:
@@ -68,7 +68,7 @@ Como os serviços rodam com `-k _`, **só clientes configurados com essa chave c
 
 ## Configurar os clientes
 
-No cliente (RustDesk ou o seu cliente ITLDesk personalizado):
+No cliente (RustDesk ou o seu cliente UnityDesk personalizado):
 **Configurações → Rede → Servidor de ID/Relay**
 
 | Campo | Valor |
@@ -115,4 +115,4 @@ docker exec itldesk-hbbs itldesk-utils doctor SEU_IP_OU_DOMINIO
 Este projeto deriva do RustDesk Server e continua sob **AGPL-3.0**: se você
 distribuir ou disponibilizar uma versão modificada, deve publicar o código-fonte
 dessas modificações. "RustDesk" é marca de seus titulares — por isso o produto
-usa o nome próprio **ITLDesk**.
+usa o nome próprio **UnityDesk**.

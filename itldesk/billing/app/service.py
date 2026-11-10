@@ -77,7 +77,7 @@ def public_invoice_url(token: str) -> str:
 def create_invoice(b, sub, plan, customer_name: str, period_start: date) -> int:
     period_end = cycle_end(period_start, sub["cycle"])
     desc = (
-        f"ITLDesk {plan['name']} ({CYCLE_LABELS.get(sub['cycle'], sub['cycle'])}) - {customer_name} - "
+        f"UnityDesk {plan['name']} ({CYCLE_LABELS.get(sub['cycle'], sub['cycle'])}) - {customer_name} - "
         f"{period_start.strftime('%d/%m/%Y')} a {period_end.strftime('%d/%m/%Y')}"
     )
     cur = b.execute(

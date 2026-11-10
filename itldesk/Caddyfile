@@ -1,4 +1,4 @@
-# ITLDesk - HTTPS automático (Let's Encrypt)
+# UnityDesk - HTTPS automático (Let's Encrypt)
 {$ITLDESK_HOST} {
 	encode gzip
 	# cobrança (/cobranca) e site de vendas (/, /assinar, /download, /termos)
@@ -6,7 +6,7 @@
 	handle @billing {
 		reverse_proxy billing:8000
 	}
-	# painel técnico e API dos clientes ITLDesk
+	# painel técnico e API dos clientes UnityDesk
 	handle {
 		reverse_proxy api:21114
 	}

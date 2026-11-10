@@ -1,34 +1,37 @@
-// ITLDesk: só permite iniciar conexões a técnicos logados (JWT emitido pelo
+// UnityDesk: só permite iniciar conexões a técnicos logados (JWT emitido pelo
 // painel itldesk-api) e com assinatura ativa (lista gerada pelo itldesk-billing).
 //
 // Variáveis de ambiente:
 //   ITLDESK_MUST_LOGIN=Y             exige login para iniciar conexões
 //   RUSTDESK_API_JWT_KEY=<chave>     mesma chave JWT do painel (obrigatória com MUST_LOGIN)
+//   ITLDESK_ALLOW_ANONYMOUS=Y        sem login, libera no plano gratuito (1 sessão por IP)
 //   ITLDESK_ALLOWED_USERS_FILE=...   arquivo JSON {"user_ids":[...],"free_user_ids":[...]}
 //                                    (padrão: itldesk_allowed_users.json; free_user_ids = plano gratuito)
 //
 // Sem o arquivo de lista, vale só a exigência de login (nenhuma assinatura é checada).
 
-use hbb_common::log;
+use hbb_common::{log, try_into_v4};
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use once_cell::sync::Lazy;
 use serde_derive::Deserialize;
 use std::{
     collections::HashSet,
+    net::{IpAddr, SocketAddr},
     sync::RwLock,
     time::{Duration, Instant, SystemTime},
 };
 
 const RELOAD_EVERY: Duration = Duration::from_secs(15);
 
-pub const MSG_LOGIN: &str = "Faça login no ITLDesk (menu da conta) para iniciar acessos.";
-pub const MSG_TOKEN: &str = "Sessão expirada. Saia e entre novamente na sua conta ITLDesk.";
+pub const MSG_LOGIN: &str = "Faça login no UnityDesk (menu da conta) para iniciar acessos.";
+pub const MSG_TOKEN: &str = "Sessão expirada. Saia e entre novamente na sua conta UnityDesk.";
 pub const MSG_SUBSCRIPTION: &str =
-    "Assinatura ITLDesk inativa ou vencida. Regularize o pagamento para voltar a acessar.";
-const MSG_CONFIG: &str = "Servidor ITLDesk sem chave de login configurada.";
+    "Assinatura UnityDesk inativa ou vencida. Regularize o pagamento para voltar a acessar.";
+const MSG_CONFIG: &str = "Servidor UnityDesk sem chave de login configurada.";
 
 struct Settings {
     must_login: bool,
+    allow_anonymous: bool,
     secret: String,
     allowed_file: String,
 }
@@ -37,19 +40,24 @@ static SETTINGS: Lazy<Settings> = Lazy::new(|| {
     let must_login = std::env::var("ITLDESK_MUST_LOGIN")
         .map(|v| matches!(v.trim().to_uppercase().as_str(), "Y" | "YES" | "1" | "TRUE"))
         .unwrap_or(false);
+    let allow_anonymous = std::env::var("ITLDESK_ALLOW_ANONYMOUS")
+        .map(|v| matches!(v.trim().to_uppercase().as_str(), "Y" | "YES" | "1" | "TRUE"))
+        .unwrap_or(false);
     let secret = std::env::var("RUSTDESK_API_JWT_KEY").unwrap_or_default();
     let allowed_file = std::env::var("ITLDESK_ALLOWED_USERS_FILE")
         .ok()
         .filter(|v| !v.trim().is_empty())
         .unwrap_or_else(|| "itldesk_allowed_users.json".to_owned());
     log::info!(
-        "ITLDesk: login obrigatório={}, chave JWT={}, lista de assinantes={}",
+        "UnityDesk: login obrigatório={}, sem login no plano gratuito={}, chave JWT={}, lista de assinantes={}",
         must_login,
+        allow_anonymous,
         if secret.is_empty() { "ausente" } else { "ok" },
         allowed_file
     );
     Settings {
         must_login,
+        allow_anonymous,
         secret,
         allowed_file,
     }
@@ -101,7 +109,7 @@ fn refresh_allowed() {
         Err(_) => {
             if !cache.warned_missing {
                 cache.warned_missing = true;
-                log::warn!("ITLDesk: lista de assinantes {} não encontrada; checando só o login", path);
+                log::warn!("UnityDesk: lista de assinantes {} não encontrada; checando só o login", path);
             }
             cache.users = None;
             cache.free.clear();
@@ -120,13 +128,13 @@ fn refresh_allowed() {
         });
     match parsed {
         Ok(f) => {
-            log::info!("ITLDesk: lista de assinantes carregada ({} técnicos)", f.user_ids.len());
+            log::info!("UnityDesk: lista de assinantes carregada ({} técnicos)", f.user_ids.len());
             cache.users = Some(f.user_ids.into_iter().collect());
             cache.free = f.free_user_ids.into_iter().collect();
             cache.mtime = Some(mtime);
         }
         // mantém a lista anterior se o arquivo estiver sendo regravado
-        Err(e) => log::warn!("ITLDesk: erro ao ler {}: {}", path, e),
+        Err(e) => log::warn!("UnityDesk: erro ao ler {}: {}", path, e),
     }
 }
 
@@ -172,5 +180,25 @@ pub fn controller_access(token: &str) -> Result<Access, &'static str> {
                 .contains(&claims.user_id)
                 .then_some(claims.user_id),
         }),
+    }
+}
+
+/// Como `controller_access`; sem login e com ITLDESK_ALLOW_ANONYMOUS=Y, libera no plano
+/// gratuito, contando as sessões pelo IP de quem conecta.
+pub fn controller_access_at(token: &str, addr: SocketAddr) -> Result<Access, &'static str> {
+    if token.is_empty() && SETTINGS.must_login && SETTINGS.allow_anonymous {
+        return Ok(Access {
+            free_user: Some(anonymous_id(try_into_v4(addr).ip())),
+        });
+    }
+    controller_access(token)
+}
+
+// identificador fora da faixa dos usuários do painel (bit 63 ligado)
+fn anonymous_id(ip: IpAddr) -> u64 {
+    match ip {
+        IpAddr::V4(v4) => (1 << 63) | u32::from(v4) as u64,
+        // o provedor costuma entregar um /64 inteiro para cada cliente
+        IpAddr::V6(v6) => (3 << 62) | ((u128::from(v6) >> 64) as u64 >> 2),
     }
 }

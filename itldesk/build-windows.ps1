@@ -1,4 +1,4 @@
-# Compila o ITLDesk Server para Windows e copia os binários para itldesk\dist
+# Compila o UnityDesk Server para Windows e copia os binários para itldesk\dist
 # Requisitos: Rust (https://rustup.rs) + Visual Studio Build Tools (C++)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot

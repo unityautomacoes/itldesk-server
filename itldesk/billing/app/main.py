@@ -1,4 +1,4 @@
-"""ITLDesk Cobrança: painel de planos, clientes, técnicos e faturas (Mercado Pago)."""
+"""UnityDesk Cobrança: painel de planos, clientes, técnicos e faturas (Mercado Pago)."""
 import asyncio
 import os
 import logging
@@ -356,12 +356,12 @@ def add_technician(
     if len(active) >= c["max_technicians"]:
         return go(f"/clientes/{cid}", error=f"O plano {c['plan_name']} permite {c['max_technicians']} técnico(s). Mude o plano para adicionar mais.")
     if db.rd_username_exists(username):
-        return go(f"/clientes/{cid}", error="Esse usuário já existe no ITLDesk.")
+        return go(f"/clientes/{cid}", error="Esse usuário já existe no UnityDesk.")
     db.rd_create_user(username, password, nickname.strip() or username, email.strip(), c["rd_group_id"])
     with db.billing() as b:
         db.log_event(b, cid, f"Técnico {username} criado por {_who(request)}")
     service.write_allowed_file()
-    return go(f"/clientes/{cid}", msg=f"Técnico {username} criado. Ele já pode entrar no app ITLDesk.")
+    return go(f"/clientes/{cid}", msg=f"Técnico {username} criado. Ele já pode entrar no app UnityDesk.")
 
 
 @app.post(f"{B}/clientes/{{cid}}/tecnicos/{{uid}}/senha")

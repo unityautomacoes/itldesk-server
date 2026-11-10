@@ -474,7 +474,7 @@ async fn make_pair_(stream: impl StreamTrait, addr: SocketAddr, key: &str, limit
                         let free = match crate::itldesk_free::relay_start(&rf.uuid) {
                             Ok(free) => free,
                             Err(reason) => {
-                                log::info!("ITLDesk: relay {} recusado: {}", rf.uuid, reason);
+                                log::info!("UnityDesk: relay {} recusado: {}", rf.uuid, reason);
                                 return;
                             }
                         };

@@ -11,7 +11,7 @@ db_v2.sqlite3
 test.*
 .idea
 
-# ITLDesk
+# UnityDesk
 itldesk/data
 itldesk/dist
 itldesk/.env

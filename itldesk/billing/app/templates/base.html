@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Cobrança{% endblock %} - ITLDesk</title>
+<title>{% block title %}Cobrança{% endblock %} - UnityDesk</title>
 <link rel="icon" href="{{ B }}/static/favicon.ico">
 <link rel="stylesheet" href="{{ B }}/static/style.css">
 </head>
 <body>
 {% if user %}
 <header class="top"><div class="in">
-  <a class="brand" href="{{ B }}/"><img src="{{ B }}/static/logo.png" alt="">ITLDesk Cobrança</a>
+  <a class="brand" href="{{ B }}/"><img src="{{ B }}/static/logo.png" alt="">UnityDesk Cobrança</a>
   <nav>
     {% set p = request.url.path %}
     <a href="{{ B }}/" class="{{ 'on' if p == B ~ '/' }}">Painel</a>

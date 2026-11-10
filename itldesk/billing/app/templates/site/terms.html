@@ -1,13 +1,13 @@
 {% extends "site/base.html" %}
-{% block title %}Termos de uso - ITLDesk{% endblock %}
+{% block title %}Termos de uso - UnityDesk{% endblock %}
 {% block content %}
 {# MODELO INICIAL: revise com um advogado antes de vender (CDC, LGPD, nota fiscal, foro). #}
 <div class="form-page"><div class="wrap" style="max-width:820px">
   <div class="card legal">
-    <h1>Termos de uso do ITLDesk</h1>
+    <h1>Termos de uso do UnityDesk</h1>
     <p>Serviço prestado por {{ SITE.COMPANY_NAME }}. Ao criar uma conta, você concorda com as condições abaixo.</p>
     <h2>1. O serviço</h2>
-    <p>O ITLDesk oferece acesso remoto entre computadores por meio de servidores mantidos pela {{ SITE.COMPANY_NAME }}. A assinatura dá direito ao número de técnicos (usuários que iniciam acessos) previsto no plano contratado.</p>
+    <p>O UnityDesk oferece acesso remoto entre computadores por meio de servidores mantidos pela {{ SITE.COMPANY_NAME }}. A assinatura dá direito ao número de técnicos (usuários que iniciam acessos) previsto no plano contratado.</p>
     <h2>2. Uso permitido</h2>
     <ul>
       <li>Acesse somente computadores com autorização do responsável por eles.</li>
@@ -16,7 +16,7 @@
     </ul>
     <h2>3. Pagamento, carência e bloqueio</h2>
     <p>A cobrança é mensal ou anual, conforme o plano escolhido, paga por Pix, boleto ou cartão via Mercado Pago. Após o vencimento há {{ GRACE_DAYS }} dias de carência; depois disso, os técnicos não conseguem iniciar novos acessos até a quitação da fatura. {% if SITE.SIGNUP_MODE == 'trial' %}O período de teste grátis é de {{ TRIAL_DAYS }} dias e não gera cobrança se a fatura não for paga.{% endif %}</p>
-    <p>O plano Gratuito não tem cobrança e permite 1 técnico, com 1 sessão por vez e duração máxima de 5 minutos por sessão. Suas condições podem mudar ou o plano pode ser encerrado, com aviso no site.</p>
+    <p>O plano Gratuito não tem cobrança e pode ser usado sem cadastro (as sessões são contadas pela conexão de internet de quem acessa) ou com uma conta de 1 técnico, sempre com 1 sessão por vez e duração máxima de 5 minutos por sessão. Suas condições podem mudar ou o plano pode ser encerrado, com aviso no site.</p>
     <h2>4. Cancelamento</h2>
     <p>Não há fidelidade. Para cancelar, basta não renovar ou pedir ao suporte. Valores de períodos já iniciados não são reembolsados, salvo nos casos previstos no Código de Defesa do Consumidor.</p>
     <h2>5. Dados pessoais</h2>
@@ -24,7 +24,7 @@
     <h2>6. Disponibilidade</h2>
     <p>Trabalhamos para manter o serviço disponível continuamente, mas podem ocorrer interrupções para manutenção ou por falhas de terceiros (internet, energia, provedores).</p>
     <h2>7. Software livre</h2>
-    <p>O ITLDesk é baseado no projeto de código aberto RustDesk e distribuído sob a licença AGPL-3.0. O código-fonte está disponível em <a href="{{ SITE.SOURCE_URL }}" target="_blank" rel="noopener">{{ SITE.SOURCE_URL }}</a>.</p>
+    <p>O UnityDesk é baseado no projeto de código aberto RustDesk e distribuído sob a licença AGPL-3.0. O código-fonte está disponível em <a href="{{ SITE.SOURCE_URL }}" target="_blank" rel="noopener">{{ SITE.SOURCE_URL }}</a>.</p>
   </div>
 </div></div>
 {% endblock %}

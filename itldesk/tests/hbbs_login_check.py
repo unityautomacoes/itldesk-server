@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Testa o bloqueio de login/assinatura do hbbs ITLDesk enviando PunchHoleRequest direto na porta 21116.
+"""Testa o bloqueio de login/assinatura do hbbs UnityDesk enviando PunchHoleRequest direto na porta 21116.
 
 Uso (no servidor):  python3 hbbs_login_check.py /opt/itldesk/itldesk
 Lê a chave JWT do .env e a chave pública do servidor em data/id_ed25519.pub. Só usa a biblioteca padrão.

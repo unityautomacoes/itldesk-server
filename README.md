@@ -1,6 +1,6 @@
-# ITLDesk Server
+# UnityDesk Server
 
-> Fork ITLDesk do RustDesk Server. Guia de instalação em português: [itldesk/README.md](itldesk/README.md)
+> Fork UnityDesk do RustDesk Server. Guia de instalação em português: [itldesk/README.md](itldesk/README.md)
 
 ---
 

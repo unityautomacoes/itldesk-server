@@ -203,7 +203,7 @@ def rd_create_user(username: str, password: str, nickname: str, email: str, grou
     with rdapi() as rd:
         cur = rd.execute(
             "INSERT INTO users (username, email, password, nickname, avatar, group_id, is_admin, status,"
-            " remark, created_at, updated_at) VALUES (?,?,?,?,'',?,0,1,'ITLDesk billing',?,?)",
+            " remark, created_at, updated_at) VALUES (?,?,?,?,'',?,0,1,'UnityDesk billing',?,?)",
             (username, email, hash_password(password), nickname, group_id, t, t),
         )
         return cur.lastrowid

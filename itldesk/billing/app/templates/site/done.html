@@ -1,5 +1,5 @@
 {% extends "site/base.html" %}
-{% block title %}Conta criada - ITLDesk{% endblock %}
+{% block title %}Conta criada - UnityDesk{% endblock %}
 {% block content %}
 <div class="form-page"><div class="wrap" style="max-width:820px">
   <div class="card">
@@ -23,10 +23,10 @@
 
     <h2>Como começar</h2>
     <ol class="how">
-      <li>Baixe e instale o ITLDesk no seu computador{% if downloads %}:{% endif %}
+      <li>Baixe e instale o UnityDesk no seu computador{% if downloads %}:{% endif %}
         {% if downloads %}<div class="dl" style="margin:10px 0 4px">{% for f in downloads %}<a href="/download/{{ f.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span><b>{{ f.kind }}</b><small>{{ f.name }} · {{ f.size_mb }} MB</small></span></a>{% endfor %}</div>{% endif %}
       </li>
-      <li>Abra o ITLDesk, clique no ícone de <b>conta</b> (canto superior) e entre com o usuário <span class="code">{{ username }}</span> e sua senha.</li>
+      <li>Abra o UnityDesk, clique no ícone de <b>conta</b> (canto superior) e entre com o usuário <span class="code">{{ username }}</span> e sua senha.</li>
       <li>No computador do cliente, instale o mesmo programa. Peça o <b>ID</b> e a <b>senha</b> que aparecem na tela dele e conecte-se.</li>
     </ol>
 

@@ -1,10 +1,10 @@
 {% extends "site/base.html" %}
-{% block title %}{{ 'Teste grátis' if signup_mode == 'trial' else 'Assinar' }} - ITLDesk{% endblock %}
+{% block title %}{{ 'Teste grátis' if signup_mode == 'trial' else 'Assinar' }} - UnityDesk{% endblock %}
 {% block content %}
 <div class="form-page"><div class="wrap">
   <form method="post" action="/assinar" class="form-grid" autocomplete="on" novalidate id="signup">
     <div class="card">
-      <h1>{{ 'Crie sua conta e teste por %d dias'|format(TRIAL_DAYS) if signup_mode == 'trial' else 'Crie sua conta ITLDesk' }}</h1>
+      <h1>{{ 'Crie sua conta e teste por %d dias'|format(TRIAL_DAYS) if signup_mode == 'trial' else 'Crie sua conta UnityDesk' }}</h1>
       <p style="color:var(--muted);margin:0 0 18px">{{ 'Sem cartão. Você só paga se quiser continuar.' if signup_mode == 'trial' else 'O acesso é liberado assim que o pagamento for confirmado.' }}</p>
       {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
 
@@ -30,7 +30,7 @@
       <div class="f"><label for="email">E-mail</label><input id="email" name="email" type="email" value="{{ v.email or '' }}" required autocomplete="email"><div class="hint">Usado para faturas e recibos.</div></div>
 
       <h2>Acesso do técnico</h2>
-      <div class="f"><label for="username">Usuário para entrar no app ITLDesk</label><input id="username" name="username" value="{{ v.username or '' }}" required autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: joao.suporte"><div class="hint">Letras, números, ponto ou hífen. Você poderá pedir mais técnicos conforme o plano.</div></div>
+      <div class="f"><label for="username">Usuário para entrar no app UnityDesk</label><input id="username" name="username" value="{{ v.username or '' }}" required autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: joao.suporte"><div class="hint">Letras, números, ponto ou hífen. Você poderá pedir mais técnicos conforme o plano.</div></div>
       <div class="row">
         <div class="f"><label for="password">Senha</label><input id="password" name="password" type="password" required minlength="8" autocomplete="new-password"></div>
         <div class="f"><label for="password2">Repita a senha</label><input id="password2" name="password2" type="password" required minlength="8" autocomplete="new-password"></div>
@@ -66,7 +66,7 @@
   function update() {
     var o = plan.options[plan.selectedIndex]; if (!o) return;
     var yearly = cycle.value === 'yearly', m = +o.dataset.m, y = +o.dataset.y, t = +o.dataset.tech;
-    document.getElementById('s-name').textContent = 'ITLDesk ' + o.dataset.name;
+    document.getElementById('s-name').textContent = 'UnityDesk ' + o.dataset.name;
     document.getElementById('s-price').textContent = yearly ? brl(y) + '/ano' : brl(m) + '/mês';
     document.getElementById('s-sub').textContent = yearly ? 'equivale a ' + brl(Math.round(y / 12)) + '/mês' : 'cobrança mensal';
     document.getElementById('s-tech').textContent = t + (t > 1 ? ' técnicos' : ' técnico') + ' com login próprio';

@@ -14,7 +14,7 @@ fn print_help() {
 Available Commands:
     genkeypair                                   Generate a new keypair
     validatekeypair [public key] [secret key]    Validate an existing keypair
-    doctor [rustdesk-server]                     Check for ITLDesk server connection problems"
+    doctor [rustdesk-server]                     Check for UnityDesk server connection problems"
     );
     process::exit(0x0001);
 }
@@ -161,7 +161,7 @@ fn main() {
         }
         "doctor" => {
             if args.len() <= 2 {
-                error_then_help("You must supply the ITLDesk server address");
+                error_then_help("You must supply the UnityDesk server address");
             }
             doctor(args[2].as_str());
         }

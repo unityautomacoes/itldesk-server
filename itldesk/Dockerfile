@@ -1,4 +1,4 @@
-# ITLDesk Server - imagem compilada a partir do código-fonte deste repositório
+# UnityDesk Server - imagem compilada a partir do código-fonte deste repositório
 # Build:  docker build -f itldesk/Dockerfile -t itldesk-server:latest .
 
 FROM rust:1-bookworm AS build
@@ -14,7 +14,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=build /out/ /usr/bin/
-LABEL org.opencontainers.image.title="ITLDesk Server" \
+LABEL org.opencontainers.image.title="UnityDesk Server" \
       org.opencontainers.image.licenses="AGPL-3.0"
 WORKDIR /data
 VOLUME /data

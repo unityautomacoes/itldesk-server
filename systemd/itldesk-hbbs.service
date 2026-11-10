@@ -1,6 +1,6 @@
 
 [Unit]
-Description=ITLDesk Signal Server
+Description=UnityDesk Signal Server
 
 [Service]
 Type=simple

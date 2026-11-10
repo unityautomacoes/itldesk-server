@@ -1,4 +1,4 @@
-# ITLDesk Server - stack completa (ID/Rendezvous + Relay)
+# UnityDesk Server - stack completa (ID/Rendezvous + Relay)
 # Uso: copie .env.example para .env, ajuste ITLDESK_HOST e rode:
 #   docker compose up -d --build
 
@@ -16,6 +16,7 @@ services:
     environment:
       # só técnicos logados e com assinatura ativa iniciam acessos
       - ITLDESK_MUST_LOGIN=${ITLDESK_MUST_LOGIN:-Y}
+      - ITLDESK_ALLOW_ANONYMOUS=${ITLDESK_ALLOW_ANONYMOUS:-Y}
       - RUSTDESK_API_JWT_KEY=${ITLDESK_JWT_KEY}
       - ITLDESK_ALLOWED_USERS_FILE=/data/itldesk_allowed_users.json
     ports:
@@ -59,13 +60,13 @@ services:
       - RUSTDESK_API_RUSTDESK_API_SERVER=https://${ITLDESK_HOST}
       - RUSTDESK_API_KEY_FILE=/data/id_ed25519.pub
       - RUSTDESK_API_JWT_KEY=${ITLDESK_JWT_KEY}
-      - RUSTDESK_API_ADMIN_TITLE=ITLDesk Admin
+      - RUSTDESK_API_ADMIN_TITLE=UnityDesk Admin
     ports:
       - "21114:21114"       # TCP - API (clientes atuais usam http://host:21114)
     volumes:
       - ./data:/data:ro           # lê a chave pública do hbbs
       - ./api-data:/app/data      # banco de dados do painel
-      - ./admin-ui:/app/resources/admin:ro   # painel com logo/título ITLDesk (gerado de lejianwen/rustdesk-api:v2.7)
+      - ./admin-ui:/app/resources/admin:ro   # painel com logo/título UnityDesk (gerado de lejianwen/rustdesk-api:v2.7)
       # português do Brasil: textos do painel (admin-i18n/patch-admin-ui.js), boas-vindas e mensagens da API
       - ./admin-i18n/hello.html:/app/conf/admin/hello.html:ro
       - ./admin-i18n/pt_BR.toml:/app/resources/i18n/pt_BR.toml:ro

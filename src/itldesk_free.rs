@@ -1,4 +1,4 @@
-// ITLDesk plano gratuito: as sessões de técnicos gratuitos passam sempre pelo
+// UnityDesk plano gratuito: as sessões de técnicos gratuitos passam sempre pelo
 // relay, só uma por vez, e são encerradas após ITLDESK_FREE_SESSION_SECS.
 //
 // O hbbs marca no arquivo de autorizações (ITLDESK_FREE_GRANTS_FILE) cada uuid
@@ -83,7 +83,7 @@ fn write_json<T: serde::Serialize>(path: &str, value: &T) {
         .and_then(|bytes| std::fs::write(&tmp, bytes).map_err(|e| e.to_string()))
         .and_then(|_| std::fs::rename(&tmp, path).map_err(|e| e.to_string()));
     if let Err(e) = result {
-        log::warn!("ITLDesk: erro ao gravar {}: {}", path, e);
+        log::warn!("UnityDesk: erro ao gravar {}: {}", path, e);
     }
 }
 
@@ -166,7 +166,7 @@ fn write_active(active: &HashMap<u64, usize>) {
 pub fn init_relay() {
     write_active(&HashMap::new());
     log::info!(
-        "ITLDesk: sessões do plano gratuito limitadas a {}s",
+        "UnityDesk: sessões do plano gratuito limitadas a {}s",
         SETTINGS.session.as_secs()
     );
 }
@@ -219,7 +219,7 @@ where
         Some(s) => match tokio::time::timeout(SETTINGS.session, relay).await {
             Ok(res) => res,
             Err(_) => {
-                log::info!("ITLDesk: sessão gratuita do técnico {} encerrada por tempo", s.user_id);
+                log::info!("UnityDesk: sessão gratuita do técnico {} encerrada por tempo", s.user_id);
                 bail!("Tempo do plano gratuito esgotado")
             }
         },
